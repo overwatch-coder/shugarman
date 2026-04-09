@@ -2,8 +2,23 @@
 
 import * as React from "react"
 
-import { cartItems as initialCartItems } from "@/lib/storefront-data"
 import type { CartItem, ProductCard, ProductDetail } from "@/lib/storefront-types"
+
+const CART_STORAGE_KEY = "shugarman-cart"
+
+function loadCart(): CartItem[] {
+  if (typeof window === "undefined") return []
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) return parsed as CartItem[]
+    }
+  } catch {
+    // Corrupt or unavailable storage — start fresh
+  }
+  return []
+}
 
 interface AddCartItemInput {
   slug: string
@@ -29,7 +44,21 @@ interface CartContextValue {
 const CartContext = React.createContext<CartContextValue | null>(null)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = React.useState<CartItem[]>(initialCartItems)
+  const [items, setItems] = React.useState<CartItem[]>([])
+  const [hydrated, setHydrated] = React.useState(false)
+
+  // Hydrate from localStorage after mount (avoids SSR mismatch)
+  React.useEffect(() => {
+    setItems(loadCart())
+    setHydrated(true)
+  }, [])
+
+  // Persist to localStorage on every change after hydration
+  React.useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+    }
+  }, [items, hydrated])
 
   const addItem = React.useCallback((item: AddCartItemInput) => {
     setItems((current) => {
