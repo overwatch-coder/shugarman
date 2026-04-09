@@ -12,10 +12,10 @@ import {
 import { ConfirmDialog } from "./confirm-dialog"
 
 const LEVEL_STYLES: Record<NotificationDoc["level"], string> = {
-  info: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  error: "bg-red-500/10 text-red-400 border-red-500/20",
+  info: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  success: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  warning: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  error: "bg-red-500/10 text-red-500 border-red-500/20",
 }
 
 function relativeTime(iso: string) {
@@ -69,8 +69,8 @@ export function NotificationsClient({
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Notifications</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Notifications</h1>
+          <p className="mt-1 text-sm text-content-secondary">
             {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
           </p>
         </div>
@@ -78,7 +78,7 @@ export function NotificationsClient({
           <button
             onClick={handleMarkAllRead}
             disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
           >
             <CheckCheck className="size-4" />
             Mark all read
@@ -88,9 +88,9 @@ export function NotificationsClient({
 
       <div className="mt-6 space-y-2">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-white/6 bg-[#141414] py-16 text-center">
-            <Bell className="size-8 text-neutral-600" />
-            <p className="text-sm text-neutral-500">No notifications yet.</p>
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
+            <Bell className="size-8 text-content-muted" />
+            <p className="text-sm text-content-secondary">No notifications yet.</p>
           </div>
         ) : (
           notifications.map((n) => (
@@ -98,8 +98,8 @@ export function NotificationsClient({
               key={n.id}
               className={`flex items-start gap-4 rounded-xl border p-4 transition-colors ${
                 n.read
-                  ? "border-white/4 bg-[#141414]"
-                  : "border-white/8 bg-[#1a1a1a]"
+                    ? "border-border bg-card"
+                    : "border-border bg-surface"
               }`}
             >
               {/* Unread indicator */}
@@ -108,7 +108,7 @@ export function NotificationsClient({
                   <span className="inline-block size-2 rounded-full bg-primary" />
                 )}
                 {n.read && (
-                  <span className="inline-block size-2 rounded-full bg-neutral-700" />
+                  <span className="inline-block size-2 rounded-full bg-content-muted" />
                 )}
               </div>
 
@@ -116,10 +116,10 @@ export function NotificationsClient({
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={`text-sm font-medium ${n.read ? "text-neutral-300" : "text-white"}`}>
+                    <p className={`text-sm font-medium ${n.read ? "text-content-secondary" : "text-foreground"}`}>
                       {n.title}
                     </p>
-                    <p className="mt-0.5 text-xs text-neutral-500">{n.message}</p>
+                    <p className="mt-0.5 text-xs text-content-secondary">{n.message}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <span
@@ -130,9 +130,9 @@ export function NotificationsClient({
                   </div>
                 </div>
                 <div className="mt-2 flex items-center gap-3">
-                  <span className="text-[11px] text-neutral-600">{relativeTime(n.createdAt)}</span>
+                  <span className="text-[11px] text-content-muted">{relativeTime(n.createdAt)}</span>
                   {n.resourceType && n.resourceSlug && (
-                    <span className="text-[11px] text-neutral-600">
+                    <span className="text-[11px] text-content-muted">
                       {n.resourceType}: {n.resourceSlug}
                     </span>
                   )}
@@ -145,7 +145,7 @@ export function NotificationsClient({
                   <button
                     onClick={() => markRead(n.id)}
                     aria-label="Mark as read"
-                    className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-white/5 hover:text-white"
+                    className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
                   >
                     <Check className="size-3.5" />
                   </button>
@@ -153,7 +153,7 @@ export function NotificationsClient({
                 <button
                   onClick={() => setDeletingId(n.id)}
                   aria-label="Delete"
-                  className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                  className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
                 >
                   <Trash2 className="size-3.5" />
                 </button>

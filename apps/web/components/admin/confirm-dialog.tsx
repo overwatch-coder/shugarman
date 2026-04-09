@@ -31,7 +31,7 @@ export function ConfirmDialog({
         <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <AlertDialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/8 bg-[#161616] p-6 shadow-2xl",
+            "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-6 shadow-2xl",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -39,16 +39,16 @@ export function ConfirmDialog({
             "data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-top-[48%]"
           )}
         >
-          <AlertDialog.Title className="text-base font-bold text-white">
+          <AlertDialog.Title className="text-base font-bold text-foreground">
             {title}
           </AlertDialog.Title>
-          <AlertDialog.Description className="mt-2 text-sm text-neutral-400">
+          <AlertDialog.Description className="mt-2 text-sm text-content-secondary">
             {description}
           </AlertDialog.Description>
 
           <div className="mt-6 flex justify-end gap-3">
             <AlertDialog.Cancel asChild>
-              <button className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white">
+              <button className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground">
                 {cancelLabel}
               </button>
             </AlertDialog.Cancel>
@@ -56,7 +56,7 @@ export function ConfirmDialog({
               <button
                 onClick={onConfirm}
                 className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90",
+                  "rounded-lg px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90",
                   destructive ? "bg-red-600" : "bg-primary"
                 )}
               >

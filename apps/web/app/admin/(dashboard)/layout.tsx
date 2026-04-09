@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/admin-auth"
 import { AdminShell } from "@/components/admin/admin-shell"
+import { getNotifications } from "@/lib/actions/notifications"
 
 export default async function AdminLayout({
   children,
@@ -10,5 +11,11 @@ export default async function AdminLayout({
   const session = await getSession()
   if (!session) redirect("/admin/login")
 
-  return <AdminShell admin={session}>{children}</AdminShell>
+  const notifications = await getNotifications(6)
+
+  return (
+    <AdminShell admin={session} initialNotifications={notifications}>
+      {children}
+    </AdminShell>
+  )
 }

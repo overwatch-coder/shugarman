@@ -204,6 +204,14 @@ export interface NotificationDoc {
   createdAt: string
 }
 
+/** Firestore: /analyticsDaily/{yyyy-mm-dd} */
+export interface AnalyticsDailyDoc {
+  date: string
+  sessions: number
+  pageViews: number
+  updatedAt: string
+}
+
 // ─── Brands (content) ─────────────────────────────────────────────────────────
 
 /** Firestore: /brands/{slug} */

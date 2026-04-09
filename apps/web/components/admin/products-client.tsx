@@ -38,8 +38,8 @@ export function ProductsClient({
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Products</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Products</h1>
+          <p className="mt-1 text-sm text-content-secondary">
             {initialProducts.length} products in catalog
           </p>
         </div>
@@ -54,26 +54,26 @@ export function ProductsClient({
 
       {/* Search */}
       <div className="relative mt-6">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-500" />
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-content-secondary" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search products…"
-          className="w-full rounded-lg border border-white/8 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+          className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-4 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
         />
       </div>
 
       {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-xl border border-white/6 bg-[#141414]">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
         {filtered.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-neutral-500">
+          <div className="px-6 py-10 text-center text-sm text-content-secondary">
             {search ? "No products match your search." : "No products yet. Add your first product."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/6 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                   <th className="px-5 py-3">Product</th>
                   <th className="px-5 py-3">Brand</th>
                   <th className="px-5 py-3">Price</th>
@@ -86,7 +86,7 @@ export function ProductsClient({
                 {filtered.map((product) => (
                   <tr
                     key={product.slug}
-                    className="border-b border-white/4 last:border-0"
+                    className="border-b border-border last:border-0"
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
@@ -94,25 +94,25 @@ export function ProductsClient({
                           <img
                             src={product.image}
                             alt={product.imageAlt}
-                            className="size-10 rounded-lg bg-white/5 object-cover"
+                            className="size-10 rounded-lg bg-surface object-cover"
                           />
                         )}
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-white">{product.name}</p>
-                          <p className="truncate text-xs text-neutral-500">{product.slug}</p>
+                          <p className="truncate font-medium text-foreground">{product.name}</p>
+                          <p className="truncate text-xs text-content-secondary">{product.slug}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-neutral-400">{product.brand}</td>
-                    <td className="px-5 py-3 font-mono text-white">
+                    <td className="px-5 py-3 text-content-secondary">{product.brand}</td>
+                    <td className="px-5 py-3 font-mono text-foreground">
                       {product.currency} {product.price.toLocaleString()}
                     </td>
                     <td className="px-5 py-3">
                       <span
                         className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                           product.condition === "new"
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-amber-500/10 text-amber-400"
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-amber-500/10 text-amber-500"
                         }`}
                       >
                         {product.condition}
@@ -129,14 +129,14 @@ export function ProductsClient({
                       <div className="flex items-center justify-end gap-1">
                         <Link
                           href={`/admin/products/${product.slug}/edit`}
-                          className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+                          className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
                         >
                           <Pencil className="size-3.5" />
                         </Link>
                         <button
                           onClick={() => setDeletingSlug(product.slug)}
                           disabled={isPending}
-                          className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                          className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
                         >
                           <Trash2 className="size-3.5" />
                         </button>

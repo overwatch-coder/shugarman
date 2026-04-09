@@ -74,8 +74,8 @@ const EMPTY_PRODUCT: ProductDoc = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/6 bg-[#141414] p-6">
-      <h2 className="mb-5 text-sm font-bold uppercase tracking-widest text-neutral-400">
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h2 className="mb-5 text-sm font-bold uppercase tracking-widest text-content-secondary">
         {title}
       </h2>
       {children}
@@ -98,18 +98,18 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-neutral-400">
+      <label className="block text-xs font-medium text-content-secondary">
         {label}
         {required && <span className="ml-1 text-red-400">*</span>}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-neutral-600">{hint}</p>}
+      {hint && <p className="text-[11px] text-content-muted">{hint}</p>}
     </div>
   )
 }
 
 const inputCls =
-  "w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+  "w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
 
 // ─── Image uploader ───────────────────────────────────────────────────────────
 
@@ -210,7 +210,7 @@ function ImageGalleryEditor({
           {entries.map((entry, idx) => (
             <div
               key={idx}
-              className="group relative overflow-hidden rounded-xl border border-white/6 bg-white/3"
+              className="group relative overflow-hidden rounded-xl border border-border bg-surface"
             >
               <div className="relative aspect-square">
                 <img
@@ -243,7 +243,7 @@ function ImageGalleryEditor({
                 value={entry.alt}
                 onChange={(e) => updateAlt(idx, e.target.value)}
                 placeholder="Alt text"
-                className="w-full border-t border-white/6 bg-transparent px-2.5 py-1.5 text-[11px] text-neutral-300 outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                className="w-full border-t border-border bg-transparent px-2.5 py-1.5 text-[11px] text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
               />
             </div>
           ))}
@@ -268,7 +268,7 @@ function ImageGalleryEditor({
         <button
           type="button"
           onClick={() => { addUrl(urlInput); setUrlInput("") }}
-          className="rounded-lg border border-white/10 px-3 py-2 text-sm text-neutral-300 hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-border px-3 py-2 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
         >
           Add URL
         </button>
@@ -278,7 +278,7 @@ function ImageGalleryEditor({
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-white/15 px-4 py-2.5 text-sm text-neutral-400 transition-colors hover:border-primary/50 hover:text-white"
+        className="inline-flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm text-content-secondary transition-colors hover:border-primary/50 hover:text-foreground"
       >
         <Upload className="size-4" />
         Upload from device
@@ -292,7 +292,7 @@ function ImageGalleryEditor({
         onChange={(e) => handleFiles(e.target.files)}
       />
 
-      <p className="text-[11px] text-neutral-600">
+      <p className="text-[11px] text-content-muted">
         First image is the primary card image. Upload or paste multiple images.
       </p>
     </div>
@@ -325,13 +325,13 @@ function ColorEditor({
           {colors.map((c, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/3 px-3 py-1.5"
+              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5"
             >
               <span
                 className="inline-block size-3.5 rounded-full border border-white/20"
                 style={{ background: c.hex }}
               />
-              <span className="text-xs text-white">{c.name}</span>
+              <span className="text-xs text-foreground">{c.name}</span>
               <button
                 type="button"
                 onClick={() => onChange(colors.filter((_, j) => j !== i))}
@@ -355,12 +355,12 @@ function ColorEditor({
           type="color"
           value={hex}
           onChange={(e) => setHex(e.target.value)}
-          className="h-10 w-12 cursor-pointer rounded-lg border border-white/8 bg-white/5 px-1"
+          className="h-10 w-12 cursor-pointer rounded-lg border border-border bg-surface px-1"
         />
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-white/10 px-3 text-sm text-neutral-300 hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-border px-3 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
         >
           <Plus className="size-4" />
         </button>
@@ -395,10 +395,10 @@ function StorageEditor({
           {options.map((o, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/3 px-3 py-1.5"
+              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5"
             >
-              <span className="text-xs text-white">{o.label}</span>
-              <span className="text-[10px] text-neutral-500">{o.value}</span>
+              <span className="text-xs text-foreground">{o.label}</span>
+              <span className="text-[10px] text-content-secondary">{o.value}</span>
               <button
                 type="button"
                 onClick={() => onChange(options.filter((_, j) => j !== i))}
@@ -427,7 +427,7 @@ function StorageEditor({
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-white/10 px-3 text-sm text-neutral-300 hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-border px-3 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
         >
           <Plus className="size-4" />
         </button>
@@ -462,11 +462,11 @@ function SpecsEditor({
           {specs.map((s, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 rounded-lg border border-white/6 bg-white/3 px-3 py-2"
+              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2"
             >
-              <GripVertical className="size-3.5 shrink-0 text-neutral-600" />
-              <span className="w-32 shrink-0 text-xs font-medium text-neutral-300">{s.label}</span>
-              <span className="flex-1 text-xs text-neutral-400">{s.value}</span>
+              <GripVertical className="size-3.5 shrink-0 text-content-muted" />
+              <span className="w-32 shrink-0 text-xs font-medium text-foreground">{s.label}</span>
+              <span className="flex-1 text-xs text-content-secondary">{s.value}</span>
               <button
                 type="button"
                 onClick={() => onChange(specs.filter((_, j) => j !== i))}
@@ -579,23 +579,23 @@ export function ProductEditor({
         <div className="flex items-center gap-3">
           <Link
             href="/admin/products"
-            className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-white">
+            <h1 className="text-2xl font-black tracking-tight text-foreground">
               {isEdit ? "Edit Product" : "New Product"}
             </h1>
             {isEdit && (
-              <p className="mt-0.5 font-mono text-xs text-neutral-500">{product.slug}</p>
+              <p className="mt-0.5 font-mono text-xs text-content-secondary">{product.slug}</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/admin/products"
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
           >
             Cancel
           </Link>
@@ -755,11 +755,11 @@ export function ProductEditor({
             }}
             className="size-4 rounded accent-primary"
           />
-          <span className="text-sm text-neutral-300">Enable installment plan</span>
+          <span className="text-sm text-foreground">Enable installment plan</span>
         </label>
 
         {hasInstallment && (
-          <div className="mt-4 grid gap-4 rounded-lg border border-white/6 bg-white/3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-4 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-3">
             {(
               [
                 { key: "downPaymentPercent", label: "Down Payment %" },
@@ -810,7 +810,7 @@ export function ProductEditor({
               onChange={(e) => update("inStock", e.target.checked)}
               className="size-4 rounded accent-primary"
             />
-            <span className="text-sm text-neutral-300">In Stock</span>
+            <span className="text-sm text-foreground">In Stock</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -819,7 +819,7 @@ export function ProductEditor({
               onChange={(e) => update("featured", e.target.checked)}
               className="size-4 rounded accent-primary"
             />
-            <span className="text-sm text-neutral-300">Featured</span>
+            <span className="text-sm text-foreground">Featured</span>
           </label>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -849,7 +849,7 @@ export function ProductEditor({
       {/* Media */}
       <Section title="Images">
         <ImageGalleryEditor images={form.images} onChange={handleGalleryChange} />
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 border-t border-white/6 pt-4">
+        <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
           <Field label="Primary Image URL" hint="Overrides the first gallery image for card display">
             <input
               value={form.image}
@@ -904,10 +904,10 @@ export function ProductEditor({
       </Section>
 
       {/* Bottom action bar */}
-      <div className="flex items-center justify-end gap-2 border-t border-white/6 pt-4">
+      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
         <Link
           href="/admin/products"
-          className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
         >
           Cancel
         </Link>

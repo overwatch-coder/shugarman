@@ -81,8 +81,8 @@ export function BrandsClient({
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Brands</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Brands</h1>
+          <p className="mt-1 text-sm text-content-secondary">
             {initialBrands.length} brands
           </p>
         </div>
@@ -97,37 +97,37 @@ export function BrandsClient({
 
       {/* Add / Edit Form */}
       {showAdd && (
-        <div className="mt-6 rounded-xl border border-white/8 bg-[#141414] p-5">
-          <h2 className="mb-4 text-sm font-bold text-white">
+        <div className="mt-6 rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-bold text-foreground">
             {editingSlug ? "Edit Brand" : "New Brand"}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-neutral-400">
+              <label className="mb-1.5 block text-xs font-medium text-content-secondary">
                 Name <span className="text-red-400">*</span>
               </label>
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. Apple"
-                className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-neutral-400">
-                Logo URL <span className="text-neutral-600">(optional)</span>
+              <label className="mb-1.5 block text-xs font-medium text-content-secondary">
+                Logo URL <span className="text-content-muted">(optional)</span>
               </label>
               <input
                 value={form.logo ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, logo: e.target.value || undefined }))}
                 placeholder="https://…"
-                className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
               />
             </div>
           </div>
           {!editingSlug && form.name && (
-            <p className="mt-2 text-xs text-neutral-500">
-              Slug: <span className="font-mono text-neutral-400">{slugify(form.name)}</span>
+            <p className="mt-2 text-xs text-content-secondary">
+              Slug: <span className="font-mono text-content-secondary">{slugify(form.name)}</span>
             </p>
           )}
           <label className="mt-4 flex cursor-pointer items-center gap-2">
@@ -137,7 +137,7 @@ export function BrandsClient({
               onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
               className="size-4 rounded accent-primary"
             />
-            <span className="text-sm text-neutral-300">Featured brand</span>
+            <span className="text-sm text-foreground">Featured brand</span>
           </label>
           {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
           <div className="mt-4 flex gap-2">
@@ -151,7 +151,7 @@ export function BrandsClient({
             </button>
             <button
               onClick={cancelForm}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="size-3.5" />
               Cancel
@@ -161,15 +161,15 @@ export function BrandsClient({
       )}
 
       {/* Table */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-white/6 bg-[#141414]">
+      <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
         {initialBrands.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-neutral-500">
+          <div className="px-6 py-10 text-center text-sm text-content-secondary">
             No brands yet. Add your first brand.
           </div>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/6 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+              <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                 <th className="px-5 py-3">Brand</th>
                 <th className="px-5 py-3">Slug</th>
                 <th className="px-5 py-3">Featured</th>
@@ -178,23 +178,23 @@ export function BrandsClient({
             </thead>
             <tbody>
               {initialBrands.map((brand) => (
-                <tr key={brand.slug} className="border-b border-white/4 last:border-0">
+                <tr key={brand.slug} className="border-b border-border last:border-0">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       {brand.logo && (
                         <img
                           src={brand.logo}
                           alt={brand.name}
-                          className="size-8 rounded-md bg-white/5 object-contain p-1"
+                          className="size-8 rounded-md bg-surface object-contain p-1"
                         />
                       )}
-                      <span className="font-medium text-white">{brand.name}</span>
+                      <span className="font-medium text-foreground">{brand.name}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 font-mono text-xs text-neutral-400">{brand.slug}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-content-secondary">{brand.slug}</td>
                   <td className="px-5 py-3">
                     {brand.featured && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
                         <Star className="size-3" />
                         Featured
                       </span>
@@ -204,13 +204,13 @@ export function BrandsClient({
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => startEdit(brand)}
-                        className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
                       >
                         <Pencil className="size-3.5" />
                       </button>
                       <button
                         onClick={() => setDeletingSlug(brand.slug)}
-                        className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
                       >
                         <Trash2 className="size-3.5" />
                       </button>

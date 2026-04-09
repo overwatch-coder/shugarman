@@ -81,8 +81,8 @@ export function CategoriesClient({
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Categories</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Categories</h1>
+          <p className="mt-1 text-sm text-content-secondary">
             {initialCategories.length} categories
           </p>
         </div>
@@ -97,37 +97,37 @@ export function CategoriesClient({
 
       {/* Add / Edit Form */}
       {showAdd && (
-        <div className="mt-6 rounded-xl border border-white/8 bg-[#141414] p-5">
-          <h2 className="mb-4 text-sm font-bold text-white">
+        <div className="mt-6 rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-bold text-foreground">
             {editingSlug ? "Edit Category" : "New Category"}
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium text-neutral-400">
+              <label className="mb-1.5 block text-xs font-medium text-content-secondary">
                 Name <span className="text-red-400">*</span>
               </label>
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. Smartphones"
-                className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-neutral-400">
+              <label className="mb-1.5 block text-xs font-medium text-content-secondary">
                 Display Order
               </label>
               <input
                 type="number"
                 value={form.order}
                 onChange={(e) => setForm((f) => ({ ...f, order: Number(e.target.value) }))}
-                className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-primary/50"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50"
               />
             </div>
           </div>
           {!editingSlug && form.name && (
-            <p className="mt-2 text-xs text-neutral-500">
-              Slug: <span className="font-mono text-neutral-400">{slugify(form.name)}</span>
+            <p className="mt-2 text-xs text-content-secondary">
+              Slug: <span className="font-mono text-content-secondary">{slugify(form.name)}</span>
             </p>
           )}
           {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
@@ -142,7 +142,7 @@ export function CategoriesClient({
             </button>
             <button
               onClick={cancelForm}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="size-3.5" />
               Cancel
@@ -152,15 +152,15 @@ export function CategoriesClient({
       )}
 
       {/* Table */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-white/6 bg-[#141414]">
+      <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
         {initialCategories.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-neutral-500">
+          <div className="px-6 py-10 text-center text-sm text-content-secondary">
             No categories yet. Add your first category.
           </div>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/6 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+              <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                 <th className="px-5 py-3">Name</th>
                 <th className="px-5 py-3">Slug</th>
                 <th className="px-5 py-3">Order</th>
@@ -169,21 +169,21 @@ export function CategoriesClient({
             </thead>
             <tbody>
               {initialCategories.map((cat) => (
-                <tr key={cat.slug} className="border-b border-white/4 last:border-0">
-                  <td className="px-5 py-3 font-medium text-white">{cat.name}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-neutral-400">{cat.slug}</td>
-                  <td className="px-5 py-3 text-neutral-400">{cat.order}</td>
+                <tr key={cat.slug} className="border-b border-border last:border-0">
+                  <td className="px-5 py-3 font-medium text-foreground">{cat.name}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-content-secondary">{cat.slug}</td>
+                  <td className="px-5 py-3 text-content-secondary">{cat.order}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => startEdit(cat)}
-                        className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
                       >
                         <Pencil className="size-3.5" />
                       </button>
                       <button
                         onClick={() => setDeletingSlug(cat.slug)}
-                        className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
                       >
                         <Trash2 className="size-3.5" />
                       </button>

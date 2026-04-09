@@ -86,15 +86,15 @@ export function SettingsClient({
 
   return (
     <div>
-      <h1 className="text-2xl font-black tracking-tight text-white">Store Settings</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-2xl font-black tracking-tight text-foreground">Store Settings</h1>
+      <p className="mt-1 text-sm text-content-secondary">
         Manage your store information and metadata
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
         {/* General */}
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-content-secondary">
             General
           </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -112,7 +112,7 @@ export function SettingsClient({
 
         {/* Contact */}
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-content-secondary">
             Contact
           </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -129,13 +129,13 @@ export function SettingsClient({
         {/* Social */}
         <section>
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-content-secondary">
               Social Links
             </h2>
             <button
               type="button"
               onClick={addSocialLink}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
             >
               <Plus className="size-3" />
               Add Link
@@ -143,7 +143,7 @@ export function SettingsClient({
           </div>
 
           {form.social.length === 0 ? (
-            <p className="mt-4 text-sm text-neutral-500">
+            <p className="mt-4 text-sm text-content-secondary">
               No social links yet. Click "Add Link" to add one.
             </p>
           ) : (
@@ -151,17 +151,17 @@ export function SettingsClient({
               {form.social.map((s, i) => (
                 <div
                   key={i}
-                  className="grid items-end gap-3 rounded-xl border border-white/6 bg-white/3 p-4 sm:grid-cols-[1fr_1fr_2fr_auto]"
+                  className="grid items-end gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-[1fr_1fr_2fr_auto]"
                 >
                   {/* Platform select */}
                   <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                       Platform
                     </label>
                     <select
                       value={s.platform}
                       onChange={(e) => updateSocial(i, "platform", e.target.value)}
-                      className="w-full rounded-lg border border-white/8 bg-[#0D0D0D] px-3 py-2.5 text-sm text-white outline-none focus:border-primary/50"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50"
                     >
                       <option value="">Select…</option>
                       {SOCIAL_PLATFORMS.map((p) => (
@@ -172,20 +172,20 @@ export function SettingsClient({
 
                   {/* Handle */}
                   <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                       Handle
                     </label>
                     <input
                       value={s.handle}
                       onChange={(e) => updateSocial(i, "handle", e.target.value)}
                       placeholder="@sugarman"
-                      className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
                     />
                   </div>
 
                   {/* URL */}
                   <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                       URL
                     </label>
                     <input
@@ -193,7 +193,7 @@ export function SettingsClient({
                       onChange={(e) => updateSocial(i, "url", e.target.value)}
                       placeholder="https://…"
                       type="url"
-                      className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
                     />
                   </div>
 
@@ -201,7 +201,7 @@ export function SettingsClient({
                   <button
                     type="button"
                     onClick={() => removeSocialLink(i)}
-                    className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                    className="rounded-lg p-2.5 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -243,10 +243,10 @@ function Field({
   textarea?: boolean
 }) {
   const cls =
-    "w-full rounded-lg border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+    "w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
   return (
     <label className={`space-y-1.5 ${full ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+      <span className="text-xs font-bold uppercase tracking-wider text-content-secondary">
         {label}
       </span>
       {textarea ? (
