@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, Search, Trash2, Pencil } from "lucide-react"
+import { toast } from "sonner"
 import type { ProductDoc } from "@/lib/schemas"
 import { deleteProduct } from "@/lib/actions/products"
 import { ConfirmDialog } from "./confirm-dialog"
@@ -28,9 +29,14 @@ export function ProductsClient({
   function handleDeleteConfirm() {
     if (!deletingSlug) return
     startTransition(async () => {
-      await deleteProduct(deletingSlug)
-      setDeletingSlug(null)
-      router.refresh()
+      const result = await deleteProduct(deletingSlug)
+      if (result.success) {
+        toast.success("Product deleted.")
+        setDeletingSlug(null)
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Failed to delete product.")
+      }
     })
   }
 

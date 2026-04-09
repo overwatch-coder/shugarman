@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+import { toast } from "sonner"
+import { AdminPageTitle } from "@/components/admin/admin-shell"
 import type {
   ProductDoc,
   ProductCondition,
@@ -25,15 +27,15 @@ import type {
 } from "@/lib/schemas"
 import { saveProduct } from "@/lib/actions/products"
 import { getFirebaseStorage } from "@/lib/firebase"
+import {
+  buildRelatedProductOptions,
+  getNextCreateSlugState,
+  slugify,
+  toggleRelatedSlug,
+} from "@/lib/admin/product-editor-helpers"
+import { queueSuccessToast } from "@/lib/toast-flash"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function slugify(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-}
 
 const EMPTY_INSTALLMENT: InstallmentPlan = {
   downPaymentPercent: 30,
@@ -116,6 +118,7 @@ const inputCls =
 interface ImageEntry {
   src: string
   alt: string
+  previewSrc?: string
   uploading?: boolean
   progress?: number
 }
@@ -141,46 +144,69 @@ function ImageGalleryEditor({
     if (!files || files.length === 0) return
     const storage = getFirebaseStorage()
 
-    for (const file of Array.from(files)) {
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2)
-      const placeholder: ImageEntry = {
-        src: URL.createObjectURL(file),
-        alt: file.name.replace(/\.[^.]+$/, ""),
+    const selectedFiles = Array.from(files)
+    const placeholders = selectedFiles.map((file) => ({
+      storageId: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      file,
+      previewSrc: URL.createObjectURL(file),
+      alt: file.name.replace(/\.[^.]+$/, ""),
+    }))
+
+    setEntries((prev) => [
+      ...prev,
+      ...placeholders.map((placeholder) => ({
+        src: "",
+        previewSrc: placeholder.previewSrc,
+        alt: placeholder.alt,
         uploading: true,
         progress: 0,
-      }
-      setEntries((prev) => [...prev, placeholder])
+      })),
+    ])
 
-      const storageRef = ref(storage, `products/${id}-${file.name}`)
-      const task = uploadBytesResumable(storageRef, file)
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+
+    for (const placeholder of placeholders) {
+      const storageRef = ref(storage, `products/${placeholder.storageId}-${placeholder.file.name}`)
+      const task = uploadBytesResumable(storageRef, placeholder.file)
 
       task.on(
         "state_changed",
         (snap) => {
           const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100)
           setEntries((prev) =>
-            prev.map((e) => (e.src === placeholder.src ? { ...e, progress: pct } : e))
+            prev.map((entry) =>
+              entry.previewSrc === placeholder.previewSrc ? { ...entry, progress: pct } : entry
+            )
           )
         },
         () => {
           // Upload failed — remove placeholder
           setEntries((prev) => {
-            const next = prev.filter((e) => e.src !== placeholder.src)
+            URL.revokeObjectURL(placeholder.previewSrc)
+            const next = prev.filter((entry) => entry.previewSrc !== placeholder.previewSrc)
             onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
             return next
           })
+          toast.error(`Failed to upload ${placeholder.file.name}.`)
         },
         async () => {
           const url = await getDownloadURL(task.snapshot.ref)
           setEntries((prev) => {
-            const next = prev.map((e) =>
-              e.src === placeholder.src ? { src: url, alt: e.alt, uploading: false } : e
+            URL.revokeObjectURL(placeholder.previewSrc)
+            const next = prev.map((entry) =>
+              entry.previewSrc === placeholder.previewSrc
+                ? { src: url, alt: entry.alt, uploading: false }
+                : entry
             )
             onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
             return next
           })
         }
       )
+    }
+
+    if (fileRef.current) {
+      fileRef.current.value = ""
     }
   }
 
@@ -190,6 +216,10 @@ function ImageGalleryEditor({
   }
 
   function remove(idx: number) {
+    const removedEntry = entries[idx]
+    if (removedEntry?.previewSrc?.startsWith("blob:")) {
+      URL.revokeObjectURL(removedEntry.previewSrc)
+    }
     const next = entries.filter((_, i) => i !== idx)
     syncUp(next)
   }
@@ -214,8 +244,10 @@ function ImageGalleryEditor({
             >
               <div className="relative aspect-square">
                 <img
-                  src={entry.src}
+                  src={entry.previewSrc ?? entry.src}
                   alt={entry.alt}
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 h-full w-full object-contain p-2"
                 />
                 {entry.uploading && (
@@ -332,6 +364,7 @@ function ColorEditor({
                 style={{ background: c.hex }}
               />
               <span className="text-xs text-foreground">{c.name}</span>
+              <span className="text-[10px] font-mono uppercase text-content-secondary">{c.hex}</span>
               <button
                 type="button"
                 onClick={() => onChange(colors.filter((_, j) => j !== i))}
@@ -511,24 +544,56 @@ export function ProductEditor({
   product,
   categories,
   brands,
+  allProducts,
 }: {
   product: ProductDoc | null
   categories: { slug: string; name: string }[]
   brands: { slug: string; name: string }[]
+  allProducts: { slug: string; name: string }[]
 }) {
   const isEdit = !!product
   const router = useRouter()
   const [form, setForm] = useState<ProductDoc>(product ?? EMPTY_PRODUCT)
   const [hasInstallment, setHasInstallment] = useState(!!product?.installment)
+  const [slugWasEdited, setSlugWasEdited] = useState(false)
   const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition()
+  const relatedProductOptions = buildRelatedProductOptions(allProducts, product?.slug)
 
   function update<K extends keyof ProductDoc>(key: K, value: ProductDoc[K]) {
     setForm((prev) => ({
       ...prev,
       [key]: value,
-      ...(key === "name" && !isEdit ? { slug: slugify(value as string) } : {}),
     }))
+  }
+
+  function handleNameChange(name: string) {
+    setForm((prev) => {
+      if (isEdit) {
+        return { ...prev, name }
+      }
+
+      const nextSlugState = getNextCreateSlugState({
+        nextName: name,
+        currentSlug: prev.slug,
+        slugWasEdited,
+      })
+
+      return {
+        ...prev,
+        name,
+        slug: nextSlugState.slug,
+      }
+    })
+  }
+
+  function handleSlugChange(slug: string) {
+    setSlugWasEdited(slug !== "" && slug !== slugify(form.name))
+    update("slug", slug)
+  }
+
+  function handleRelatedProductToggle(slug: string) {
+    update("relatedSlugs", toggleRelatedSlug(form.relatedSlugs, slug))
   }
 
   // Keep primary image in sync with first gallery image
@@ -564,16 +629,20 @@ export function ProductEditor({
     startTransition(async () => {
       const result = await saveProduct(payload)
       if (result.success) {
+        queueSuccessToast(isEdit ? "Product updated." : "Product created.")
         router.push("/admin/products")
         router.refresh()
       } else {
         setError(result.error ?? "Save failed")
+        toast.error(result.error ?? "Save failed")
       }
     })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <AdminPageTitle title={isEdit ? form.name || "Edit Product" : "New Product"} />
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -626,16 +695,16 @@ export function ProductEditor({
           <Field label="Product Name" required>
             <input
               value={form.name}
-              onChange={(e) => update("name", e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="iPhone 15 Pro Max"
               className={inputCls}
             />
           </Field>
 
-          <Field label="Slug" hint={isEdit ? "Cannot be changed after creation" : "Auto-generated from name"}>
+          <Field label="Slug" hint={isEdit ? "Cannot be changed after creation" : "Auto-generated from name. You can still customize it."}>
             <input
               value={form.slug}
-              onChange={(e) => update("slug", e.target.value)}
+              onChange={(e) => handleSlugChange(e.target.value)}
               disabled={isEdit}
               className={inputCls + (isEdit ? " opacity-50" : "")}
             />
@@ -885,21 +954,39 @@ export function ProductEditor({
 
       {/* Related products */}
       <Section title="Related Products">
-        <Field label="Related slugs" hint="Comma-separated product slugs">
-          <input
-            value={form.relatedSlugs.join(", ")}
-            onChange={(e) =>
-              update(
-                "relatedSlugs",
-                e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-              )
-            }
-            placeholder="iphone-14-pro, samsung-s24"
-            className={inputCls}
-          />
+        <Field
+          label="Choose related products"
+          hint="Admins see product names here. The saved values remain the selected product slugs internally."
+        >
+          {relatedProductOptions.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border bg-surface px-4 py-4 text-sm text-content-secondary">
+              No other products are available yet.
+            </div>
+          ) : (
+            <div className="max-h-72 space-y-2 overflow-y-auto rounded-lg border border-border bg-surface p-3">
+              {relatedProductOptions.map((option) => {
+                const checked = form.relatedSlugs.includes(option.slug)
+
+                return (
+                  <label
+                    key={option.slug}
+                    className="flex items-start gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-accent"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleRelatedProductToggle(option.slug)}
+                      className="mt-0.5 size-4 rounded accent-primary"
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-foreground">{option.label}</span>
+                      <span className="block text-xs text-content-secondary">{option.slug}</span>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          )}
         </Field>
       </Section>
 

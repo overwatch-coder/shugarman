@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, Check, CheckCheck, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import type { NotificationDoc } from "@/lib/schemas"
 import {
   markNotificationRead,
@@ -45,23 +46,36 @@ export function NotificationsClient({
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     )
     startTransition(async () => {
-      await markNotificationRead(id)
+      const result = await markNotificationRead(id)
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to update notification.")
+      }
     })
   }
 
   function handleMarkAllRead() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
     startTransition(async () => {
-      await markAllNotificationsRead()
+      const result = await markAllNotificationsRead()
+      if (result.success) {
+        toast.success("Notifications marked as read.")
+      } else {
+        toast.error(result.error ?? "Failed to update notifications.")
+      }
     })
   }
 
   function handleDeleteConfirm() {
     if (!deletingId) return
     startTransition(async () => {
-      await deleteNotification(deletingId)
-      setNotifications((prev) => prev.filter((n) => n.id !== deletingId))
-      setDeletingId(null)
+      const result = await deleteNotification(deletingId)
+      if (result.success) {
+        toast.success("Notification deleted.")
+        setNotifications((prev) => prev.filter((n) => n.id !== deletingId))
+        setDeletingId(null)
+      } else {
+        toast.error(result.error ?? "Failed to delete notification.")
+      }
     })
   }
 

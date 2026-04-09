@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Search, ChevronDown, Package } from "lucide-react"
+import { toast } from "sonner"
 import type { OrderDoc, OrderStatus } from "@/lib/schemas"
 import { updateOrderStatus } from "@/lib/actions/orders"
 
@@ -51,8 +52,13 @@ export function OrdersClient({
 
   function handleStatusChange(orderId: string, newStatus: OrderStatus) {
     startTransition(async () => {
-      await updateOrderStatus(orderId, newStatus)
-      router.refresh()
+      const result = await updateOrderStatus(orderId, newStatus)
+      if (result.success) {
+        toast.success(`Order updated to ${newStatus}.`)
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Failed to update order.")
+      }
     })
   }
 

@@ -25,6 +25,24 @@ interface StatsProps {
   }
 }
 
+const ORDER_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-amber-500/10 text-amber-500",
+  confirmed: "bg-blue-500/10 text-blue-500",
+  processing: "bg-purple-500/10 text-purple-500",
+  shipped: "bg-cyan-500/10 text-cyan-500",
+  delivered: "bg-emerald-500/10 text-emerald-500",
+  cancelled: "bg-red-500/10 text-red-500",
+}
+
+const ORDER_STATUS_BAR_COLORS: Record<string, string> = {
+  pending: "#f59e0b",
+  confirmed: "#3b82f6",
+  processing: "#a855f7",
+  shipped: "#06b6d4",
+  delivered: "#10b981",
+  cancelled: "#ef4444",
+}
+
 function formatCurrency(value: number) {
   return `GHC ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
@@ -201,25 +219,35 @@ function AreaRevenueChart({ data }: { data: DashboardAnalytics["orderSeries"] })
   )
 }
 
-function VerticalBarChart({ data }: { data: DashboardAnalytics["statusBreakdown"] }) {
+function StatusBreakdownChart({ data }: { data: DashboardAnalytics["statusBreakdown"] }) {
   const maxValue = Math.max(...data.map((entry) => entry.count), 1)
 
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-      {data.map((entry, index) => (
-        <div key={entry.status} className="flex flex-col items-center gap-3">
-          <div className="flex h-36 w-full items-end rounded-2xl bg-surface px-2 pb-2">
+    <div className="space-y-3">
+      {data.map((entry) => (
+        <div key={entry.status} className="rounded-2xl border border-border bg-surface p-3">
+          <div className="mb-2 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">{entry.status}</p>
+              <p className="mt-0.5 text-xs text-content-secondary">
+                {entry.count === 1 ? "1 order in this stage" : `${entry.count} orders in this stage`}
+              </p>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${ORDER_STATUS_COLORS[entry.status] ?? "bg-card text-foreground"}`}
+            >
+              {entry.count}
+            </span>
+          </div>
+
+          <div className="h-2.5 rounded-full bg-card">
             <div
-              className="w-full rounded-xl"
+              className="h-2.5 rounded-full"
               style={{
-                height: `${Math.max((entry.count / maxValue) * 100, entry.count > 0 ? 12 : 0)}%`,
-                backgroundColor: `var(--chart-${(index % 5) + 1})`,
+                width: `${Math.max((entry.count / maxValue) * 100, entry.count > 0 ? 10 : 0)}%`,
+                backgroundColor: ORDER_STATUS_BAR_COLORS[entry.status] ?? "var(--primary)",
               }}
             />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-bold text-foreground">{entry.count}</p>
-            <p className="text-[11px] uppercase tracking-wider text-content-secondary">{entry.status}</p>
           </div>
         </div>
       ))}
@@ -356,7 +384,7 @@ export function DashboardClient({ stats }: StatsProps) {
 
       <div className="mt-5 grid gap-5 xl:grid-cols-3">
         <ChartCard title="Order Status" subtitle="Bar graph showing what is currently happening across fulfillment stages.">
-          <VerticalBarChart data={analytics.statusBreakdown} />
+          <StatusBreakdownChart data={analytics.statusBreakdown} />
         </ChartCard>
 
         <ChartCard title="Catalog Mix" subtitle="Category balance across the current product inventory.">

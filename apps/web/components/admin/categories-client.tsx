@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react"
+import { toast } from "sonner"
 import type { CategoryDoc } from "@/lib/schemas"
 import { saveCategory, deleteCategory } from "@/lib/actions/categories"
 import { ConfirmDialog } from "./confirm-dialog"
@@ -60,10 +61,12 @@ export function CategoriesClient({
     startTransition(async () => {
       const result = await saveCategory({ ...form, slug })
       if (result.success) {
+        toast.success(editingSlug ? "Category updated." : "Category created.")
         cancelForm()
         router.refresh()
       } else {
         setError(result.error ?? "Save failed.")
+        toast.error(result.error ?? "Save failed.")
       }
     })
   }
@@ -71,9 +74,14 @@ export function CategoriesClient({
   function handleDeleteConfirm() {
     if (!deletingSlug) return
     startTransition(async () => {
-      await deleteCategory(deletingSlug)
-      setDeletingSlug(null)
-      router.refresh()
+      const result = await deleteCategory(deletingSlug)
+      if (result.success) {
+        toast.success("Category deleted.")
+        setDeletingSlug(null)
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Failed to delete category.")
+      }
     })
   }
 

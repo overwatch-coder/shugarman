@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react"
 import {
   Bell,
   Box,
@@ -21,6 +21,7 @@ import {
   Tag,
   X,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -53,6 +54,31 @@ const LEVEL_STYLES: Record<NotificationDoc["level"], string> = {
   error: "border-red-500/20 bg-red-500/10 text-red-500",
 }
 
+const AdminPageTitleContext = createContext<((title: string | null) => void) | null>(null)
+
+function getActiveNavLabel(pathname: string) {
+  const activeItem = [...navItems].reverse().find((item) => {
+    if (item.href === "/admin") return pathname === "/admin"
+    return pathname.startsWith(item.href)
+  })
+
+  return activeItem?.label ?? "Admin"
+}
+
+function getDefaultPageTitle(pathname: string) {
+  if (pathname === "/admin") return "Dashboard"
+  if (pathname === "/admin/products") return "Products"
+  if (pathname === "/admin/products/new") return "New Product"
+  if (/^\/admin\/products\/[^/]+\/edit$/.test(pathname)) return "Edit Product"
+  if (pathname === "/admin/categories") return "Categories"
+  if (pathname === "/admin/brands") return "Brands"
+  if (pathname === "/admin/orders") return "Orders"
+  if (pathname === "/admin/notifications") return "Notifications"
+  if (pathname === "/admin/settings") return "Store Settings"
+
+  return getActiveNavLabel(pathname)
+}
+
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
@@ -64,6 +90,20 @@ function relativeTime(iso: string) {
   if (hrs < 24) return `${hrs}h ago`
 
   return `${Math.floor(hrs / 24)}d ago`
+}
+
+export function AdminPageTitle({ title }: { title: string }) {
+  const setTitle = useContext(AdminPageTitleContext)
+
+  useEffect(() => {
+    setTitle?.(title)
+
+    return () => {
+      setTitle?.(null)
+    }
+  }, [setTitle, title])
+
+  return null
 }
 
 export function AdminShell({
@@ -81,11 +121,18 @@ export function AdminShell({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState(initialNotifications)
+  const [pageTitleOverride, setPageTitleOverride] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const notificationMenuRef = useRef<HTMLDivElement>(null)
   const { theme, toggleTheme } = useAppTheme()
+  const activeSectionLabel = getActiveNavLabel(pathname)
+  const pageTitle = pageTitleOverride ?? getDefaultPageTitle(pathname)
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
+
+  useEffect(() => {
+    setPageTitleOverride(null)
+  }, [pathname])
 
   useEffect(() => {
     if (!notificationsOpen) return
@@ -125,14 +172,22 @@ export function AdminShell({
   function handleMarkRead(id: string) {
     setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)))
     startTransition(async () => {
-      await markNotificationRead(id)
+      const result = await markNotificationRead(id)
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to update notification.")
+      }
     })
   }
 
   function handleMarkAllRead() {
     setNotifications((prev) => prev.map((item) => ({ ...item, read: true })))
     startTransition(async () => {
-      await markAllNotificationsRead()
+      const result = await markAllNotificationsRead()
+      if (result.success) {
+        toast.success("Notifications marked as read.")
+      } else {
+        toast.error(result.error ?? "Failed to update notifications.")
+      }
     })
   }
 
@@ -205,13 +260,13 @@ export function AdminShell({
           collapsed ? "w-[68px]" : "w-[240px]"
         )}
       >
-        {sidebar}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute bottom-4 -right-3 z-10 hidden size-7 items-center justify-center rounded-full border border-border bg-card text-content-secondary shadow-sm transition-colors hover:text-foreground lg:flex"
+          className="absolute left-full top-4 z-10 hidden size-7 -translate-x-1/2 items-center justify-center rounded-full border border-border bg-card text-content-secondary shadow-sm transition-colors hover:text-foreground lg:flex"
         >
           {collapsed ? <ChevronRight className="size-3.5" /> : <ChevronLeft className="size-3.5" />}
         </button>
+        {sidebar}
       </aside>
 
       {mobileOpen && (
@@ -238,7 +293,12 @@ export function AdminShell({
             <Menu className="size-5" />
           </button>
 
-          <div className="flex-1" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{pageTitle}</p>
+            <p className="truncate text-[10px] uppercase tracking-wider text-content-secondary">
+              {activeSectionLabel}
+            </p>
+          </div>
 
           <button
             onClick={toggleTheme}
@@ -372,7 +432,9 @@ export function AdminShell({
           </Link>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <AdminPageTitleContext.Provider value={setPageTitleOverride}>
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        </AdminPageTitleContext.Provider>
       </div>
     </div>
   )

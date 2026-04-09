@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, X, Check, Star } from "lucide-react"
+import { toast } from "sonner"
 import type { BrandDoc } from "@/lib/schemas"
 import { saveBrand, deleteBrand } from "@/lib/actions/brands"
 import { ConfirmDialog } from "./confirm-dialog"
@@ -60,10 +61,12 @@ export function BrandsClient({
     startTransition(async () => {
       const result = await saveBrand({ ...form, slug })
       if (result.success) {
+        toast.success(editingSlug ? "Brand updated." : "Brand created.")
         cancelForm()
         router.refresh()
       } else {
         setError(result.error ?? "Save failed.")
+        toast.error(result.error ?? "Save failed.")
       }
     })
   }
@@ -71,9 +74,14 @@ export function BrandsClient({
   function handleDeleteConfirm() {
     if (!deletingSlug) return
     startTransition(async () => {
-      await deleteBrand(deletingSlug)
-      setDeletingSlug(null)
-      router.refresh()
+      const result = await deleteBrand(deletingSlug)
+      if (result.success) {
+        toast.success("Brand deleted.")
+        setDeletingSlug(null)
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Failed to delete brand.")
+      }
     })
   }
 

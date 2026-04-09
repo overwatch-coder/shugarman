@@ -3,8 +3,10 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Save, Check, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import type { StoreSettingsDoc, SocialLink } from "@/lib/schemas"
 import { saveStoreSettings } from "@/lib/actions/settings"
+import { buildSocialUrl, normalizeSocialLink } from "@/lib/admin/settings-helpers"
 
 const SOCIAL_PLATFORMS = [
   "Facebook",
@@ -52,9 +54,22 @@ export function SettingsClient({
   function updateSocial(index: number, key: keyof SocialLink, value: string) {
     setForm((prev) => ({
       ...prev,
-      social: prev.social.map((s, i) =>
-        i === index ? { ...s, [key]: value } : s
-      ),
+      social: prev.social.map((socialLink, socialIndex) => {
+        if (socialIndex !== index) return socialLink
+
+        const nextLink = { ...socialLink, [key]: value }
+        const previousGeneratedUrl = buildSocialUrl(socialLink.platform, socialLink.handle)
+        const nextGeneratedUrl = buildSocialUrl(nextLink.platform, nextLink.handle)
+
+        if (key === "handle" || key === "platform") {
+          const shouldAutoFillUrl = !socialLink.url.trim() || socialLink.url.trim() === previousGeneratedUrl
+          if (shouldAutoFillUrl) {
+            nextLink.url = nextGeneratedUrl
+          }
+        }
+
+        return nextLink
+      }),
     }))
     setSaved(false)
   }
@@ -78,9 +93,23 @@ export function SettingsClient({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await saveStoreSettings(form)
-      setSaved(true)
-      router.refresh()
+      const payload = {
+        ...form,
+        social: form.social
+          .map((link) => normalizeSocialLink(link))
+          .filter((link) => link.platform || link.handle || link.url),
+      }
+
+      const result = await saveStoreSettings(payload)
+
+      if (result.success) {
+        setForm(payload)
+        setSaved(true)
+        toast.success("Store settings saved.")
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Failed to save settings.")
+      }
     })
   }
 
@@ -195,6 +224,11 @@ export function SettingsClient({
                       type="url"
                       className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
                     />
+                    {!s.url && s.handle && s.platform && (
+                      <p className="text-[11px] text-content-secondary">
+                        Auto URL: {buildSocialUrl(s.platform, s.handle) || "Unavailable for this platform"}
+                      </p>
+                    )}
                   </div>
 
                   {/* Remove */}
