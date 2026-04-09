@@ -1,15 +1,39 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Bebas_Neue, DM_Mono, Space_Grotesk } from "next/font/google"
+import type { Metadata } from "next"
 
 import "@workspace/ui/globals.css"
+import "./storefront.css"
+import { CartProvider } from "@/components/storefront/cart-provider"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@workspace/ui/lib/utils";
+import { cn } from "@workspace/ui/lib/utils"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
-
-const fontMono = Geist_Mono({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-body",
 })
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
+})
+
+const dmMono = DM_Mono({
+  weight: ["400", "500"],
+  subsets: ["latin"],
+  variable: "--font-pricing",
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-label",
+})
+
+export const metadata: Metadata = {
+  title: "Sugar Man iStore | Cinematic Precision Engineering",
+  description:
+    "New, refurbished & unlocked phones in Kumasi — with flexible payment plans. Experience the future of mobile retail.",
+}
 
 export default function RootLayout({
   children,
@@ -20,10 +44,18 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "antialiased",
+        inter.variable,
+        bebasNeue.variable,
+        dmMono.variable,
+        spaceGrotesk.variable
+      )}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="sf-bg-gradient font-body text-foreground">
+        <ThemeProvider>
+          <CartProvider>{children}</CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

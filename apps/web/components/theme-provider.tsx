@@ -1,71 +1,63 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+
+type Theme = "dark" | "light"
+
+interface ThemeContextValue {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
+}
+
+const ThemeContext = React.createContext<ThemeContextValue | null>(null)
+
+const STORAGE_KEY = "shugarman-theme"
 
 function ThemeProvider({
   children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
-      <ThemeHotkey />
-      {children}
-    </NextThemesProvider>
-  )
-}
+}: {
+  children: React.ReactNode
+}) {
+  const [theme, setThemeState] = React.useState<Theme>("dark")
 
-function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
+  const setTheme = React.useCallback((nextTheme: Theme) => {
+    setThemeState(nextTheme)
+    document.documentElement.classList.toggle("dark", nextTheme === "dark")
+    document.documentElement.style.colorScheme = nextTheme
+    window.localStorage.setItem(STORAGE_KEY, nextTheme)
+  }, [])
 
-  return (
-    target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
-  )
-}
-
-function ThemeHotkey() {
-  const { resolvedTheme, setTheme } = useTheme()
+  const toggleTheme = React.useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }, [setTheme, theme])
 
   React.useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
+    const storedTheme = window.localStorage.getItem(STORAGE_KEY)
 
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
-        return
-      }
-
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
+    if (storedTheme === "light" || storedTheme === "dark") {
+      setTheme(storedTheme)
+      return
     }
 
-    window.addEventListener("keydown", onKeyDown)
+    setTheme("dark")
+  }, [setTheme])
 
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-    }
-  }, [resolvedTheme, setTheme])
-
-  return null
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
-export { ThemeProvider }
+function useAppTheme() {
+  const context = React.useContext(ThemeContext)
+
+  if (!context) {
+    throw new Error("useAppTheme must be used within ThemeProvider")
+  }
+
+  return context
+}
+
+export { ThemeProvider, useAppTheme }

@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Shugarman iStore — Storefront Theme
+   Brand triad: Red (#E8192C), Black (#0D0D0D), White (#FFFFFF)
+   ========================================================================== */
+
+/* ---------- Storefront design tokens ---------- */
+:root {
+  /* Brand */
+  --sf-red: #D0101F;
+  --sf-red-hover: #B80D1A;
+  --sf-red-glow: rgba(208, 16, 31, 0.35);
+
+  /* Surfaces (light) */
+  --sf-bg: #FFFFFF;
+  --sf-surface: #F4F4F4;
+  --sf-surface-low: #EBEBEB;
+  --sf-surface-high: #E0E0E0;
+  --sf-surface-highest: #D5D5D5;
+  --sf-surface-bright: #F9F9F9;
+
+  /* Text (light) */
+  --sf-text: #0D0D0D;
+  --sf-text-secondary: #555555;
+  --sf-text-muted: #888888;
+
+  /* Misc */
+  --sf-glass: rgba(255, 255, 255, 0.7);
+  --sf-glass-blur: 20px;
+  --sf-outline: rgba(0, 0, 0, 0.08);
+  --sf-ghost-border: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Brand */
+  --sf-red: #E8192C;
+  --sf-red-hover: #FF2D41;
+  --sf-red-glow: rgba(232, 25, 44, 0.4);
+
+  /* Surfaces (dark) — Cinematic tonal hierarchy */
+  --sf-bg: #0D0D0D;
+  --sf-surface: #131313;
+  --sf-surface-low: #1C1B1B;
+  --sf-surface-high: #2A2A2A;
+  --sf-surface-highest: #353534;
+  --sf-surface-bright: #3A3939;
+
+  /* Text (dark) */
+  --sf-text: #F5F5F5;
+  --sf-text-secondary: #A0A0A0;
+  --sf-text-muted: #666666;
+
+  /* Misc */
+  --sf-glass: rgba(20, 20, 20, 0.7);
+  --sf-glass-blur: 20px;
+  --sf-outline: rgba(255, 255, 255, 0.05);
+  --sf-ghost-border: rgba(174, 135, 132, 0.15);
+}
+
+/* ---------- Utility classes ---------- */
+
+/* Typography */
+.font-display {
+  font-family: var(--font-display), "Bebas Neue", sans-serif;
+}
+.font-body {
+  font-family: var(--font-body), "Inter", sans-serif;
+}
+.font-mono {
+  font-family: var(--font-pricing), "DM Mono", monospace;
+}
+.font-label {
+  font-family: var(--font-label), "Space Grotesk", sans-serif;
+}
+
+/* Glass navigation */
+.sf-glass {
+  background: var(--sf-glass);
+  backdrop-filter: blur(var(--sf-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sf-glass-blur));
+}
+
+/* Ghost border — for inputs only, not sectioning */
+.sf-ghost-border {
+  border-bottom: 1px solid var(--sf-ghost-border);
+}
+.sf-ghost-border:focus-within {
+  border-bottom: 2px solid var(--sf-red);
+  box-shadow: 0 4px 12px -4px var(--sf-red-glow);
+}
+
+/* Red glow — primary CTAs only */
+.sf-red-glow {
+  filter: drop-shadow(0 0 25px var(--sf-red-glow));
+}
+.sf-red-glow-box {
+  box-shadow: 0 0 20px var(--sf-red-glow);
+}
+
+/* Background gradient */
+.sf-bg-gradient {
+  background-color: var(--sf-bg);
+  background-image: radial-gradient(at top left, var(--sf-surface), var(--sf-bg));
+}
+
+/* Marquee animation */
+@keyframes sf-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.sf-marquee-track {
+  display: flex;
+  animation: sf-marquee 30s linear infinite;
+}
+
+/* Section surface variants (tonal layering, no borders) */
+.sf-surface {
+  background-color: var(--sf-surface);
+}
+.sf-surface-low {
+  background-color: var(--sf-surface-low);
+}
+.sf-surface-high {
+  background-color: var(--sf-surface-high);
+}
+.sf-surface-highest {
+  background-color: var(--sf-surface-highest);
+}
+.sf-surface-bright {
+  background-color: var(--sf-surface-bright);
+}
+
+/* Card hover — tonal lift, not shadow */
+.sf-card-hover {
+  transition: background-color 0.3s, transform 0.3s;
+}
+.sf-card-hover:hover {
+  background-color: var(--sf-surface-bright);
+  transform: scale(1.02);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--sf-red);
+  color: white;
+}
