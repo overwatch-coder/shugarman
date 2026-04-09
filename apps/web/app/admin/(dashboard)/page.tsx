@@ -1,7 +1,11 @@
 import { adminDb } from "@/lib/firebase-admin"
 import { DashboardClient } from "@/components/admin/dashboard-client"
-import type { OrderDoc, ProductDoc } from "@/lib/schemas"
-import { buildDashboardAnalytics, type TrafficPoint } from "@/lib/admin/dashboard-analytics"
+import type { AnalyticsPageDailyDoc, OrderDoc, ProductDoc } from "@/lib/schemas"
+import {
+  buildDashboardAnalytics,
+  type PageTrafficPoint,
+  type TrafficPoint,
+} from "@/lib/admin/dashboard-analytics"
 
 const REVENUE_STATUSES = new Set(["confirmed", "processing", "shipped", "delivered"])
 
@@ -18,13 +22,21 @@ async function getStats() {
     ])
 
     let trafficSeries: TrafficPoint[] = []
+    let pageTrafficSeries: PageTrafficPoint[] = []
 
     try {
-      const trafficSnap = await adminDb
-        .collection("analyticsDaily")
-        .orderBy("date", "desc")
-        .limit(14)
-        .get()
+      const [trafficSnap, pageTrafficSnap] = await Promise.all([
+        adminDb
+          .collection("analyticsDaily")
+          .orderBy("date", "desc")
+          .limit(14)
+          .get(),
+        adminDb
+          .collection("analyticsPagesDaily")
+          .orderBy("date", "desc")
+          .limit(100)
+          .get(),
+      ])
 
       trafficSeries = trafficSnap.docs
         .map((doc) => {
@@ -46,8 +58,23 @@ async function getStats() {
         })
         .filter((entry): entry is TrafficPoint => entry !== null)
         .reverse()
+
+      pageTrafficSeries = pageTrafficSnap.docs
+        .map((doc) => doc.data() as AnalyticsPageDailyDoc)
+        .filter(
+          (entry): entry is AnalyticsPageDailyDoc =>
+            typeof entry.date === "string" &&
+            typeof entry.path === "string" &&
+            typeof entry.pageViews === "number"
+        )
+        .map((entry) => ({
+          date: entry.date,
+          path: entry.path,
+          pageViews: entry.pageViews,
+        }))
     } catch {
       trafficSeries = []
+      pageTrafficSeries = []
     }
 
     const products = productsSnap.docs.map(
@@ -65,6 +92,7 @@ async function getStats() {
       orders,
       products,
       trafficSeries,
+      pageTrafficSeries,
     })
 
     const revenue = orders.reduce((sum, order) => {
@@ -94,6 +122,7 @@ async function getStats() {
         orders: [],
         products: [],
         trafficSeries: [],
+        pageTrafficSeries: [],
       }),
     }
   }

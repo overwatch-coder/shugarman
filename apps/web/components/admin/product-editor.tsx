@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useRef } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ import {
   slugify,
   toggleRelatedSlug,
 } from "@/lib/admin/product-editor-helpers"
+import { setColorImageIndex } from "@/lib/product-color-links"
 import { queueSuccessToast } from "@/lib/toast-flash"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -335,9 +336,11 @@ function ImageGalleryEditor({
 
 function ColorEditor({
   colors,
+  images,
   onChange,
 }: {
   colors: ProductColor[]
+  images: ProductImage[]
   onChange: (c: ProductColor[]) => void
 }) {
   const [name, setName] = useState("")
@@ -350,28 +353,56 @@ function ColorEditor({
     setHex("#000000")
   }
 
+  function updateLinkedImage(colorName: string, value: string) {
+    onChange(setColorImageIndex(colors, colorName, value === "" ? null : Number(value)))
+  }
+
   return (
     <div className="space-y-3">
       {colors.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-3">
           {colors.map((c, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5"
+              className="rounded-lg border border-border bg-surface p-3"
             >
-              <span
-                className="inline-block size-3.5 rounded-full border border-white/20"
-                style={{ background: c.hex }}
-              />
-              <span className="text-xs text-foreground">{c.name}</span>
-              <span className="text-[10px] font-mono uppercase text-content-secondary">{c.hex}</span>
-              <button
-                type="button"
-                onClick={() => onChange(colors.filter((_, j) => j !== i))}
-                className="text-neutral-500 hover:text-red-400"
-              >
-                <X className="size-3" />
-              </button>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block size-3.5 rounded-full border border-white/20"
+                    style={{ background: c.hex }}
+                  />
+                  <div>
+                    <span className="block text-xs text-foreground">{c.name}</span>
+                    <span className="text-[10px] font-mono uppercase text-content-secondary">{c.hex}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onChange(colors.filter((_, j) => j !== i))}
+                  className="text-neutral-500 hover:text-red-400"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+
+              <div className="mt-3">
+                <label className="mb-1.5 block text-[11px] font-medium text-content-secondary">
+                  Linked storefront image
+                </label>
+                <select
+                  value={typeof c.imageIndices?.[0] === "number" ? String(c.imageIndices[0]) : ""}
+                  onChange={(e) => updateLinkedImage(c.name, e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="">No linked image</option>
+                  {images.map((image, imageIndex) => (
+                    <option key={`${image.src}-${imageIndex}`} value={String(imageIndex)}>
+                      {`Image ${imageIndex + 1}${image.alt ? ` - ${image.alt}` : ""}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           ))}
         </div>
@@ -557,7 +588,7 @@ export function ProductEditor({
   const [hasInstallment, setHasInstallment] = useState(!!product?.installment)
   const [slugWasEdited, setSlugWasEdited] = useState(false)
   const [error, setError] = useState("")
-  const [isPending, startTransition] = useTransition()
+  const [isSaving, setIsSaving] = useState(false)
   const relatedProductOptions = buildRelatedProductOptions(allProducts, product?.slug)
 
   function update<K extends keyof ProductDoc>(key: K, value: ProductDoc[K]) {
@@ -605,8 +636,10 @@ export function ProductEditor({
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (isSaving) return
+
     setError("")
 
     if (!form.name.trim() || !form.slug.trim() || !form.brand.trim()) {
@@ -626,17 +659,24 @@ export function ProductEditor({
       installment: hasInstallment ? (form.installment ?? EMPTY_INSTALLMENT) : null,
     }
 
-    startTransition(async () => {
+    setIsSaving(true)
+
+    try {
       const result = await saveProduct(payload)
       if (result.success) {
         queueSuccessToast(isEdit ? "Product updated." : "Product created.")
-        router.push("/admin/products")
-        router.refresh()
+        router.replace("/admin/products")
       } else {
         setError(result.error ?? "Save failed")
         toast.error(result.error ?? "Save failed")
+        setIsSaving(false)
       }
-    })
+    } catch {
+      const message = "Save failed"
+      setError(message)
+      toast.error(message)
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -670,15 +710,15 @@ export function ProductEditor({
           </Link>
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isSaving}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {isPending ? (
+            {isSaving ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <Check className="size-4" />
             )}
-            {isPending ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
+            {isSaving ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
           </button>
         </div>
       </div>
@@ -939,7 +979,7 @@ export function ProductEditor({
 
       {/* Colours */}
       <Section title="Colour Variants">
-        <ColorEditor colors={form.colors} onChange={(c) => update("colors", c)} />
+        <ColorEditor colors={form.colors} images={form.images} onChange={(c) => update("colors", c)} />
       </Section>
 
       {/* Storage options */}
@@ -1000,11 +1040,11 @@ export function ProductEditor({
         </Link>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isSaving}
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-          {isPending ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
+          {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+          {isSaving ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
         </button>
       </div>
     </form>

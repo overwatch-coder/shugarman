@@ -50,6 +50,12 @@ test("buildDashboardAnalytics aggregates order, revenue, status, category, and t
       { date: "2026-04-08", sessions: 320, pageViews: 910 },
       { date: "2026-04-09", sessions: 410, pageViews: 1180 },
     ],
+    pageTrafficSeries: [
+      { date: "2026-04-08", path: "/", pageViews: 320 },
+      { date: "2026-04-09", path: "/", pageViews: 420 },
+      { date: "2026-04-09", path: "/shop", pageViews: 180 },
+      { date: "2026-04-09", path: "/products/iphone-15", pageViews: 145 },
+    ],
   })
 
   assert.equal(analytics.orderSeries.length, 7)
@@ -91,6 +97,11 @@ test("buildDashboardAnalytics aggregates order, revenue, status, category, and t
   assert.equal(analytics.traffic.series.length, 2)
   assert.equal(analytics.traffic.totalSessions, 730)
   assert.equal(analytics.traffic.totalPageViews, 2090)
+  assert.deepEqual(analytics.traffic.topPages, [
+    { path: "/", label: "Home", pageViews: 740 },
+    { path: "/shop", label: "Shop", pageViews: 180 },
+    { path: "/products/iphone-15", label: "Product", pageViews: 145 },
+  ])
 })
 
 test("buildDashboardAnalytics reports disconnected traffic when no traffic series exists", () => {
@@ -99,10 +110,12 @@ test("buildDashboardAnalytics reports disconnected traffic when no traffic serie
     orders: [],
     products: [],
     trafficSeries: [],
+    pageTrafficSeries: [],
   })
 
   assert.equal(analytics.traffic.connected, false)
   assert.equal(analytics.traffic.totalSessions, 0)
+  assert.deepEqual(analytics.traffic.topPages, [])
   assert.equal(analytics.orderTrend.deltaPercent, 0)
   assert.equal(analytics.revenueTrend.deltaPercent, 0)
 })

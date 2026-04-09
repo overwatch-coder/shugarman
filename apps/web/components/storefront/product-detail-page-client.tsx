@@ -7,6 +7,7 @@ import { Expand, Heart, MessageCircle, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
 
 import type { ProductDetail } from "@/lib/storefront-types"
+import { getLinkedImageForColor } from "@/lib/product-color-links"
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { useCart } from "./cart-provider"
 import { QuantityStepper } from "./quantity-stepper"
@@ -17,8 +18,10 @@ function formatPrice(value: number, currency: string) {
 }
 
 export function ProductDetailPageClient({ product }: { product: ProductDetail }) {
-  const [activeImage, setActiveImage] = useState(product.images[0])
   const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name ?? "")
+  const [activeImage, setActiveImage] = useState(
+    () => getLinkedImageForColor(product, product.colors[0]?.name ?? "") ?? product.images[0]
+  )
   const [selectedStorage, setSelectedStorage] = useState(product.storageOptions[0]?.value ?? "")
   const [quantity, setQuantity] = useState(1)
   const currentImage = activeImage ?? product.images[0]
@@ -136,7 +139,13 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                   <button
                     key={color.name}
                     type="button"
-                    onClick={() => setSelectedColor(color.name)}
+                    onClick={() => {
+                      setSelectedColor(color.name)
+                      const linkedImage = getLinkedImageForColor(product, color.name)
+                      if (linkedImage) {
+                        setActiveImage(linkedImage)
+                      }
+                    }}
                     aria-label={color.name}
                     className={selectedColor === color.name ? "rounded-full border-2 border-primary p-0.5" : "rounded-full border-2 border-transparent p-0.5"}
                   >

@@ -297,31 +297,62 @@ function TrafficPanel({ traffic }: { traffic: DashboardAnalytics["traffic"] }) {
   const maxSessions = Math.max(...traffic.series.map((point) => point.sessions), 1)
 
   return (
-    <div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-surface p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Sessions</p>
-          <p className="mt-2 text-xl font-black text-foreground">{traffic.totalSessions.toLocaleString()}</p>
+    <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+      <div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-surface p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Sessions</p>
+            <p className="mt-2 text-xl font-black text-foreground">{traffic.totalSessions.toLocaleString()}</p>
+          </div>
+          <div className="rounded-2xl bg-surface p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Page Views</p>
+            <p className="mt-2 text-xl font-black text-foreground">{traffic.totalPageViews.toLocaleString()}</p>
+          </div>
         </div>
-        <div className="rounded-2xl bg-surface p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Page Views</p>
-          <p className="mt-2 text-xl font-black text-foreground">{traffic.totalPageViews.toLocaleString()}</p>
+
+        <div className="mt-5 flex h-44 items-end gap-2 rounded-2xl bg-surface px-3 pb-3 pt-6">
+          {traffic.series.map((point, index) => (
+            <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
+              <div
+                className="w-full rounded-t-xl"
+                style={{
+                  height: `${Math.max((point.sessions / maxSessions) * 100, 10)}%`,
+                  backgroundColor: `var(--chart-${(index % 5) + 1})`,
+                }}
+              />
+              <span className="text-[10px] uppercase tracking-wider text-content-secondary">{point.date.slice(5)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="mt-5 flex h-36 items-end gap-2 rounded-2xl bg-surface px-3 pb-3 pt-6">
-        {traffic.series.map((point, index) => (
-          <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
-            <div
-              className="w-full rounded-t-xl"
-              style={{
-                height: `${Math.max((point.sessions / maxSessions) * 100, 10)}%`,
-                backgroundColor: `var(--chart-${(index % 5) + 1})`,
-              }}
-            />
-            <span className="text-[10px] uppercase tracking-wider text-content-secondary">{point.date.slice(5)}</span>
+      <div className="rounded-2xl bg-surface p-4">
+        <div className="mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Top Pages</p>
+          <p className="mt-1 text-sm text-content-secondary">Most visited storefront destinations.</p>
+        </div>
+
+        {traffic.topPages.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-content-secondary">
+            Page-level data will appear here after visitors start browsing the storefront.
           </div>
-        ))}
+        ) : (
+          <div className="space-y-3">
+            {traffic.topPages.map((page) => (
+              <div key={page.path} className="rounded-xl border border-border bg-card px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{page.label}</p>
+                    <p className="mt-0.5 truncate text-xs text-content-secondary">{page.path}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                    {page.pageViews}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -382,7 +413,7 @@ export function DashboardClient({ stats }: StatsProps) {
         </ChartCard>
       </div>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-3">
+      <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <ChartCard title="Order Status" subtitle="Bar graph showing what is currently happening across fulfillment stages.">
           <StatusBreakdownChart data={analytics.statusBreakdown} />
         </ChartCard>
@@ -390,7 +421,9 @@ export function DashboardClient({ stats }: StatsProps) {
         <ChartCard title="Catalog Mix" subtitle="Category balance across the current product inventory.">
           <HorizontalBarChart data={analytics.categoryBreakdown} />
         </ChartCard>
+      </div>
 
+      <div className="mt-5">
         <ChartCard title="Website Traffic" subtitle="Traffic analytics panel for daily sessions and page views.">
           <TrafficPanel traffic={analytics.traffic} />
         </ChartCard>

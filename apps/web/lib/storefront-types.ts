@@ -45,6 +45,7 @@ export interface ProductCard {
 export interface ProductColor {
   name: string;
   hex: string;
+  imageIndices?: number[];
 }
 
 export interface ProductStorage {

@@ -9,12 +9,19 @@ export interface TrafficPoint {
   pageViews: number
 }
 
+export interface PageTrafficPoint {
+  date: string
+  path: string
+  pageViews: number
+}
+
 interface BuildDashboardAnalyticsInput {
   nowIso: string
   windowDays?: number
   orders: OrderSummary[]
   products: ProductSummary[]
   trafficSeries: TrafficPoint[]
+  pageTrafficSeries: PageTrafficPoint[]
 }
 
 interface DashboardPoint {
@@ -43,6 +50,7 @@ export interface DashboardAnalytics {
     series: TrafficPoint[]
     totalSessions: number
     totalPageViews: number
+    topPages: Array<{ path: string; label: string; pageViews: number }>
   }
 }
 
@@ -111,12 +119,25 @@ function calculateDelta(current: number, previous: number) {
   return roundToTenth(((current - previous) / previous) * 100)
 }
 
+function formatPageLabel(path: string) {
+  if (path === "/") return "Home"
+  if (path === "/shop") return "Shop"
+  if (path.startsWith("/products/")) return "Product"
+  if (path === "/cart") return "Cart"
+
+  const segment = path.split("/").filter(Boolean)[0]
+  if (!segment) return "Page"
+
+  return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
+}
+
 export function buildDashboardAnalytics({
   nowIso,
   windowDays = 7,
   orders,
   products,
   trafficSeries,
+  pageTrafficSeries,
 }: BuildDashboardAnalyticsInput): DashboardAnalytics {
   const currentRange = buildDateRange(nowIso, windowDays)
   const previousRange = buildDateRange(
@@ -196,6 +217,19 @@ export function buildDashboardAnalytics({
   const normalizedTraffic = [...trafficSeries].sort((left, right) => left.date.localeCompare(right.date))
   const totalSessions = normalizedTraffic.reduce((sum, point) => sum + point.sessions, 0)
   const totalPageViews = normalizedTraffic.reduce((sum, point) => sum + point.pageViews, 0)
+  const pageBreakdown = Array.from(
+    pageTrafficSeries.reduce((map, point) => {
+      map.set(point.path, (map.get(point.path) ?? 0) + point.pageViews)
+      return map
+    }, new Map<string, number>()).entries()
+  )
+    .map(([path, pageViews]) => ({
+      path,
+      label: formatPageLabel(path),
+      pageViews,
+    }))
+    .sort((left, right) => right.pageViews - left.pageViews || left.path.localeCompare(right.path))
+    .slice(0, 5)
 
   return {
     orderSeries: Array.from(orderSeriesMap.values()),
@@ -216,6 +250,7 @@ export function buildDashboardAnalytics({
       series: normalizedTraffic,
       totalSessions,
       totalPageViews,
+      topPages: pageBreakdown,
     },
   }
 }

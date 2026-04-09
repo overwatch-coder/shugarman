@@ -212,6 +212,14 @@ export interface AnalyticsDailyDoc {
   updatedAt: string
 }
 
+/** Firestore: /analyticsPagesDaily/{yyyy-mm-dd__path} */
+export interface AnalyticsPageDailyDoc {
+  date: string
+  path: string
+  pageViews: number
+  updatedAt: string
+}
+
 // ─── Brands (content) ─────────────────────────────────────────────────────────
 
 /** Firestore: /brands/{slug} */
