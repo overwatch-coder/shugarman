@@ -31,6 +31,14 @@ dist
 apps/web/*firebase-admin*.json
 apps/web/*adminsdk*.json
 
+# Docs generated during planning/spec workflows
+!docs/
+!docs/superpowers/
+!docs/superpowers/specs/
+!docs/superpowers/specs/*.md
+!docs/superpowers/plans/
+!docs/superpowers/plans/*.md
+
 
 # Debug
 npm-debug.log*
