@@ -9,6 +9,8 @@ export type ProductCondition = "new" | "refurbished"
 export interface ProductColor {
   name: string
   hex: string
+  /** Indices into the `images` array that belong to this colour variant */
+  imageIndices?: number[]
 }
 
 export interface ProductStorage {
@@ -174,6 +176,31 @@ export interface AdminDoc {
   email: string
   displayName: string
   role: AdminRole
+  createdAt: string
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export type NotificationLevel = "info" | "warning" | "error" | "success"
+
+export type NotificationEvent =
+  | "new_order"
+  | "low_stock"
+  | "catalog_change"
+  | "settings_change"
+  | "image_upload_failure"
+
+/** Firestore: /notifications/{id} */
+export interface NotificationDoc {
+  id: string
+  event: NotificationEvent
+  level: NotificationLevel
+  title: string
+  message: string
+  read: boolean
+  /** slug, orderId, etc. — identifies the related resource */
+  resourceSlug?: string
+  resourceType?: "product" | "order" | "brand" | "category" | "settings"
   createdAt: string
 }
 

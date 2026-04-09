@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Heart, Search, ShoppingCart } from "lucide-react"
+import { Heart, Search, ShoppingCart, UserRound } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -11,11 +12,13 @@ import { navigationLinks } from "@/lib/storefront-data"
 import { AnimatedCounter } from "./motion-primitives"
 import { ThemeToggle } from "./theme-toggle"
 import { useCart } from "./cart-provider"
+import { AuthPanel } from "./auth-panel"
 
 export function StoreHeader() {
   const pathname = usePathname()
   const { totalItems } = useCart()
   const shouldReduceMotion = useReducedMotion()
+  const [authOpen, setAuthOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 sf-glass">
@@ -84,9 +87,18 @@ export function StoreHeader() {
               )}
             </AnimatePresence>
           </Link>
+          <button
+            type="button"
+            aria-label="Account"
+            onClick={() => setAuthOpen(true)}
+            className="inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
+          >
+            <UserRound className="size-4" />
+          </button>
           <ThemeToggle />
         </div>
       </div>
+      <AuthPanel open={authOpen} onClose={() => setAuthOpen(false)} />
     </header>
   )
 }

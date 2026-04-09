@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import "@workspace/ui/globals.css"
 import "./storefront.css"
 import { CartProvider } from "@/components/storefront/cart-provider"
+import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 
 const inter = Inter({
@@ -44,7 +45,6 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "dark",
         "antialiased",
         inter.variable,
         bebasNeue.variable,
@@ -53,7 +53,9 @@ export default function RootLayout({
       )}
     >
       <body className="sf-bg-gradient font-body text-foreground">
-        <CartProvider>{children}</CartProvider>
+        <ThemeProvider>
+          <CartProvider>{children}</CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -227,16 +227,16 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
             Payment Plan Details
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-content-secondary">
-            Secure your device today with a {product.installment.downPaymentPercent}% upfront payment. The remaining balance is split into {product.installment.weeks} weekly payments of {formatPrice(product.installment.weeklyRate, product.currency)}.
+            Secure your device today with a {product.installment?.downPaymentPercent || 50}% upfront payment. The remaining balance is split into {product.installment?.weeks || 0} weekly payments of {formatPrice(product.installment?.weeklyRate || 0, product.currency)}.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="bg-surface-high p-4">
               <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Due Today</p>
-              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment.downPayment, product.currency)}</p>
+              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment?.downPayment || 0, product.currency)}</p>
             </div>
             <div className="bg-surface-high p-4">
               <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Weekly Rate</p>
-              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment.weeklyRate, product.currency)}</p>
+              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment?.weeklyRate || 0, product.currency)}</p>
             </div>
           </div>
         </div>

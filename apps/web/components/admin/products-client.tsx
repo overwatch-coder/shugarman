@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Plus, Search, Trash2, Pencil } from "lucide-react"
 import type { ProductDoc } from "@/lib/schemas"
 import { deleteProduct } from "@/lib/actions/products"
-import { ProductFormModal } from "./product-form-modal"
+import { ConfirmDialog } from "./confirm-dialog"
 
 export function ProductsClient({
   initialProducts,
@@ -14,8 +15,7 @@ export function ProductsClient({
 }) {
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const [showForm, setShowForm] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<ProductDoc | null>(null)
+  const [deletingSlug, setDeletingSlug] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const filtered = initialProducts.filter(
@@ -25,28 +25,13 @@ export function ProductsClient({
       p.slug.toLowerCase().includes(search.toLowerCase())
   )
 
-  function handleEdit(product: ProductDoc) {
-    setEditingProduct(product)
-    setShowForm(true)
-  }
-
-  function handleAdd() {
-    setEditingProduct(null)
-    setShowForm(true)
-  }
-
-  function handleDelete(slug: string) {
-    if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return
+  function handleDeleteConfirm() {
+    if (!deletingSlug) return
     startTransition(async () => {
-      await deleteProduct(slug)
+      await deleteProduct(deletingSlug)
+      setDeletingSlug(null)
       router.refresh()
     })
-  }
-
-  function handleFormClose() {
-    setShowForm(false)
-    setEditingProduct(null)
-    router.refresh()
   }
 
   return (
@@ -58,13 +43,13 @@ export function ProductsClient({
             {initialProducts.length} products in catalog
           </p>
         </div>
-        <button
-          onClick={handleAdd}
+        <Link
+          href="/admin/products/new"
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
         >
           <Plus className="size-4" />
           Add Product
-        </button>
+        </Link>
       </div>
 
       {/* Search */}
@@ -142,14 +127,14 @@ export function ProductsClient({
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleEdit(product)}
+                        <Link
+                          href={`/admin/products/${product.slug}/edit`}
                           className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
                         >
                           <Pencil className="size-3.5" />
-                        </button>
+                        </Link>
                         <button
-                          onClick={() => handleDelete(product.slug)}
+                          onClick={() => setDeletingSlug(product.slug)}
                           disabled={isPending}
                           className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
                         >
@@ -165,13 +150,16 @@ export function ProductsClient({
         )}
       </div>
 
-      {/* Product form modal */}
-      {showForm && (
-        <ProductFormModal
-          product={editingProduct}
-          onClose={handleFormClose}
-        />
-      )}
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={!!deletingSlug}
+        onOpenChange={(open) => { if (!open) setDeletingSlug(null) }}
+        title="Delete product?"
+        description={`"${deletingSlug}" will be permanently removed from the catalog. This cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   )
 }

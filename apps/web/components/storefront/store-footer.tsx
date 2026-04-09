@@ -110,7 +110,15 @@ export async function StoreFooter() {
 
       <div className="mx-auto mt-16 flex w-full max-w-[1440px] flex-col justify-between gap-4 border-t border-white/5 px-8 py-8 text-[10px] font-mono uppercase tracking-[0.2em] text-white/35 md:flex-row">
         <p>© 2026 Sugar Man iStore. Cinematic Precision Engineering.</p>
-        <p>Verified Secure</p>
+        <div className="flex items-center gap-6">
+          <p>Verified Secure</p>
+          <Link
+            href="/admin/login"
+            className="transition-colors hover:text-white/60"
+          >
+            Admin Portal
+          </Link>
+        </div>
       </div>
     </footer>
   )

@@ -2,9 +2,22 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Save, Check } from "lucide-react"
-import type { StoreSettingsDoc } from "@/lib/schemas"
+import { Save, Check, Plus, Trash2 } from "lucide-react"
+import type { StoreSettingsDoc, SocialLink } from "@/lib/schemas"
 import { saveStoreSettings } from "@/lib/actions/settings"
+
+const SOCIAL_PLATFORMS = [
+  "Facebook",
+  "Instagram",
+  "Twitter / X",
+  "TikTok",
+  "YouTube",
+  "WhatsApp",
+  "LinkedIn",
+  "Snapchat",
+  "Pinterest",
+  "Threads",
+]
 
 export function SettingsClient({
   initialSettings,
@@ -36,12 +49,28 @@ export function SettingsClient({
     setSaved(false)
   }
 
-  function updateSocial(index: number, key: keyof StoreSettingsDoc["social"][0], value: string) {
+  function updateSocial(index: number, key: keyof SocialLink, value: string) {
     setForm((prev) => ({
       ...prev,
       social: prev.social.map((s, i) =>
         i === index ? { ...s, [key]: value } : s
       ),
+    }))
+    setSaved(false)
+  }
+
+  function addSocialLink() {
+    setForm((prev) => ({
+      ...prev,
+      social: [...prev.social, { platform: "", handle: "", url: "" }],
+    }))
+    setSaved(false)
+  }
+
+  function removeSocialLink(index: number) {
+    setForm((prev) => ({
+      ...prev,
+      social: prev.social.filter((_, i) => i !== index),
     }))
     setSaved(false)
   }
@@ -99,18 +128,83 @@ export function SettingsClient({
 
         {/* Social */}
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-            Social Links
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+              Social Links
+            </h2>
+            <button
+              type="button"
+              onClick={addSocialLink}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Plus className="size-3" />
+              Add Link
+            </button>
+          </div>
+
           {form.social.length === 0 ? (
-            <p className="mt-4 text-sm text-neutral-500">No social links configured.</p>
+            <p className="mt-4 text-sm text-neutral-500">
+              No social links yet. Click "Add Link" to add one.
+            </p>
           ) : (
             <div className="mt-4 space-y-3">
               {form.social.map((s, i) => (
-                <div key={i} className="grid gap-3 sm:grid-cols-3">
-                  <Field label="Platform" value={s.platform} onChange={(v) => updateSocial(i, "platform", v)} />
-                  <Field label="Handle" value={s.handle} onChange={(v) => updateSocial(i, "handle", v)} />
-                  <Field label="URL" value={s.url} onChange={(v) => updateSocial(i, "url", v)} />
+                <div
+                  key={i}
+                  className="grid items-end gap-3 rounded-xl border border-white/6 bg-white/3 p-4 sm:grid-cols-[1fr_1fr_2fr_auto]"
+                >
+                  {/* Platform select */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                      Platform
+                    </label>
+                    <select
+                      value={s.platform}
+                      onChange={(e) => updateSocial(i, "platform", e.target.value)}
+                      className="w-full rounded-lg border border-white/8 bg-[#0D0D0D] px-3 py-2.5 text-sm text-white outline-none focus:border-primary/50"
+                    >
+                      <option value="">Select…</option>
+                      {SOCIAL_PLATFORMS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Handle */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                      Handle
+                    </label>
+                    <input
+                      value={s.handle}
+                      onChange={(e) => updateSocial(i, "handle", e.target.value)}
+                      placeholder="@sugarman"
+                      className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                    />
+                  </div>
+
+                  {/* URL */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                      URL
+                    </label>
+                    <input
+                      value={s.url}
+                      onChange={(e) => updateSocial(i, "url", e.target.value)}
+                      placeholder="https://…"
+                      type="url"
+                      className="w-full rounded-lg border border-white/8 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
+                    />
+                  </div>
+
+                  {/* Remove */}
+                  <button
+                    type="button"
+                    onClick={() => removeSocialLink(i)}
+                    className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
                 </div>
               ))}
             </div>

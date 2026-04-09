@@ -5,19 +5,24 @@ import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import {
   BarChart3,
+  Bell,
   Box,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   LogOut,
   Menu,
+  Moon,
   Package,
   Settings,
   ShoppingCart,
   Store,
+  Sun,
+  Tag,
   X,
 } from "lucide-react"
 import { destroySession } from "@/lib/admin-auth"
+import { useAppTheme } from "@/components/theme-provider"
 
 interface AdminProps {
   uid: string
@@ -29,7 +34,10 @@ interface AdminProps {
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/categories", label: "Categories", icon: Tag },
+  { href: "/admin/brands", label: "Brands", icon: Box },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/settings", label: "Store Settings", icon: Settings },
 ]
 
@@ -44,6 +52,7 @@ export function AdminShell({
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { theme, toggleTheme } = useAppTheme()
 
   async function handleLogout() {
     await destroySession()
@@ -166,6 +175,22 @@ export function AdminShell({
           </button>
 
           <div className="flex-1" />
+
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
+
+          <Link
+            href="/admin/notifications"
+            aria-label="Notifications"
+            className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <Bell className="size-4" />
+          </Link>
 
           <Link
             href="/"
