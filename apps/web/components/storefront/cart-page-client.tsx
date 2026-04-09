@@ -144,9 +144,9 @@ export function CartPageClient() {
               </p>
             </div>
           </div>
-          <button type="button" className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-white sf-red-glow-box">
+          <Link href="/checkout" className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-white sf-red-glow-box">
             Proceed to Checkout
-          </button>
+          </Link>
           <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.15em] text-content-muted">
             Secure SSL Encryption / Precision Guaranteed
           </p>
