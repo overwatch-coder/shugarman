@@ -14,6 +14,7 @@ export interface CartState {
   ) => void
   updateQuantity: (slug: string, quantity: number) => void
   removeItem: (slug: string) => void
+  clearCart: () => void
 }
 
 function computeTotal(items: CartItem[]) {
@@ -115,6 +116,8 @@ export const useCartStore = create<CartState>()(
           const nextItems = state.items.filter((item) => item.slug !== slug)
           return { items: nextItems, totalItems: computeTotal(nextItems) }
         }),
+
+      clearCart: () => set({ items: [], totalItems: 0 }),
     }),
     {
       name: "shugarman-cart",

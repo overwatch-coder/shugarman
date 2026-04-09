@@ -1,8 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, ChevronLeft, CreditCard, MapPin, ShieldCheck, Truck } from "lucide-react"
 
 import { Button } from "@workspace/ui/components/button"
@@ -39,7 +40,9 @@ const stepMeta: Record<CheckoutStep, { title: string; icon: typeof MapPin }> = {
 }
 
 export function CheckoutPageClient() {
-  const { items, totalItems } = useCart()
+  const { items, totalItems, clearCart } = useCart()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const {
     step,
     shippingAddress,
@@ -54,7 +57,24 @@ export function CheckoutPageClient() {
     goBack,
     placeOrder,
     reset,
+    setStep,
   } = useCheckoutStore()
+
+  // Sync step ↔ URL search param (?step=shipping)
+  useEffect(() => {
+    const urlStep = searchParams.get("step") as CheckoutStep | null
+    const validSteps: CheckoutStep[] = ["information", "shipping", "payment", "confirmation"]
+    if (urlStep && validSteps.includes(urlStep) && urlStep !== step) {
+      setStep(urlStep)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("step", step)
+    router.replace(`/checkout?${params.toString()}`, { scroll: false })
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [errors, setErrors] = useState<string[]>([])
 
@@ -284,7 +304,7 @@ export function CheckoutPageClient() {
           <Link href="/shop" className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-4 text-sm font-black uppercase tracking-[0.18em] text-white sf-red-glow-box">
             Continue Shopping
           </Link>
-          <button type="button" onClick={reset} className="inline-flex items-center justify-center rounded-md border border-white/10 px-8 py-4 text-sm font-bold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-white/5">
+          <button type="button" onClick={() => { clearCart(); reset(); }} className="inline-flex items-center justify-center rounded-md border border-white/10 px-8 py-4 text-sm font-bold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-white/5">
             Start New Checkout
           </button>
         </div>
@@ -342,7 +362,7 @@ export function CheckoutPageClient() {
             </div>
 
             <DialogFooter className="mt-8 -mx-8 -mb-8 border-white/5 bg-surface-low px-8 py-6 sm:-mx-10 sm:-mb-10 sm:px-10">
-              <Button variant="outline" onClick={reset}>
+              <Button variant="outline" onClick={() => { clearCart(); reset(); }}>
                 Start New Checkout
               </Button>
               <Button asChild>
