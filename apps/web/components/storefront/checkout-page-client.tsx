@@ -16,7 +16,7 @@ import {
 
 import { useCart } from "./cart-provider"
 import { MotionPage, MotionSection } from "./motion-primitives"
-import { storeMetadata } from "@/lib/storefront-data"
+import { createOrder } from "@/lib/actions/orders"
 import {
   CHECKOUT_STEPS,
   SHIPPING_METHODS,
@@ -25,6 +25,7 @@ import {
   type PaymentMethod,
   type ShippingAddress,
 } from "@/lib/checkout-store"
+import type { StoreMetadata } from "@/lib/storefront-types"
 
 function formatPrice(value: number, currency: string) {
   return `${currency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -37,7 +38,11 @@ const stepMeta: Record<CheckoutStep, { title: string; icon: typeof MapPin }> = {
   confirmation: { title: "Confirmation", icon: CheckCircle2 },
 }
 
-export function CheckoutPageClient() {
+export function CheckoutPageClient({
+  storeMetadata,
+}: {
+  storeMetadata: StoreMetadata
+}) {
   const { items, totalItems, clearCart } = useCart()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -133,6 +138,31 @@ export function CheckoutPageClient() {
   function handleContinue() {
     if (!validateCurrentStep()) return
     if (step === "payment") {
+      // Submit order to Firestore, then show success
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      const shippingCost = shippingMethod?.price ?? 0
+      createOrder({
+        customer: shippingAddress,
+        shipping: shippingMethod!,
+        payment: paymentMethod!,
+        items: items.map((item) => ({
+          slug: item.slug,
+          name: item.name,
+          variant: item.variant,
+          image: item.image,
+          price: item.price,
+          currency: item.currency,
+          quantity: item.quantity,
+        })),
+        subtotal,
+        shippingCost,
+        tax: 0,
+        total: subtotal + shippingCost,
+        currency: "GHC",
+        notes: shippingAddress.notes,
+      }).catch(() => {
+        // Order persists locally even if Firestore fails
+      })
       placeOrder()
       return
     }

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { ProductDetailPageClient } from "@/components/storefront/product-detail-page-client"
 import { StoreShell } from "@/components/storefront/store-shell"
-import { productDetails } from "@/lib/storefront-data"
+import { getStorefrontProductDetail } from "@/lib/storefront-dal"
 
 export default async function ProductPage({
   params,
@@ -10,7 +10,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = productDetails[slug]
+  const product = await getStorefrontProductDetail(slug)
 
   if (!product) {
     notFound()

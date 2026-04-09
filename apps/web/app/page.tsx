@@ -8,11 +8,11 @@ import { ProductCard } from "@/components/storefront/product-card"
 import { SectionHeading } from "@/components/storefront/section-heading"
 import { StoreShell } from "@/components/storefront/store-shell"
 import {
-  homeCategories,
-  products,
-  storeMetadata,
-  trustPoints,
-} from "@/lib/storefront-data"
+  getStorefrontProducts,
+  getHomeCategories,
+  getTrustPoints,
+  getStorefrontMetadata,
+} from "@/lib/storefront-dal"
 
 const iconMap = {
   "badge-check": BadgeCheck,
@@ -22,8 +22,14 @@ const iconMap = {
   "shield-check": ShieldCheck,
 } as const
 
-export default function Page() {
-  const featuredProducts = products.slice(0, 4)
+export default async function Page() {
+  const [allProducts, homeCategories, trustPoints, storeMetadata] = await Promise.all([
+    getStorefrontProducts(),
+    getHomeCategories(),
+    getTrustPoints(),
+    getStorefrontMetadata(),
+  ])
+  const featuredProducts = allProducts.slice(0, 4)
 
   return (
     <StoreShell className="px-0 lg:px-0">

@@ -14,8 +14,7 @@ import Link from "next/link"
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import { motion } from "framer-motion"
 
-import type { AboutPageContent } from "@/lib/storefront-types"
-import { storeMetadata } from "@/lib/storefront-data"
+import type { AboutPageContent, StoreMetadata } from "@/lib/storefront-types"
 
 /* ── Icon resolver ───────────────────────────────────────────────── */
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -63,9 +62,10 @@ function FadeIn({
 /* ── Main component ─────────────────────────────────────────────── */
 interface AboutPageClientProps {
   content: AboutPageContent
+  storeMetadata: StoreMetadata
 }
 
-export function AboutPageClient({ content }: AboutPageClientProps) {
+export function AboutPageClient({ content, storeMetadata }: AboutPageClientProps) {
   const { hero, story, mission, values, milestones, team, stats } = content
 
   return (

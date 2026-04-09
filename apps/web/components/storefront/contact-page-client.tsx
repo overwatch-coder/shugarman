@@ -14,8 +14,7 @@ import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
-import type { ContactPageContent } from "@/lib/storefront-types"
-import { storeMetadata } from "@/lib/storefront-data"
+import type { ContactPageContent, StoreMetadata } from "@/lib/storefront-types"
 
 /* ── Icon resolvers ──────────────────────────────────────────────── */
 const channelIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -63,9 +62,10 @@ function FadeIn({
 /* ── Main component ─────────────────────────────────────────────── */
 interface ContactPageClientProps {
   content: ContactPageContent
+  storeMetadata: StoreMetadata
 }
 
-export function ContactPageClient({ content }: ContactPageClientProps) {
+export function ContactPageClient({ content, storeMetadata }: ContactPageClientProps) {
   const { hero, channels, inquiryTypes, mapEmbedNote } = content
 
   const [formState, setFormState] = useState({

@@ -2,7 +2,9 @@ import Link from "next/link"
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import type { IconType } from "react-icons"
 
-import { footerColumns, storeMetadata } from "@/lib/storefront-data"
+import { getStorefrontMetadata } from "@/lib/storefront-dal"
+import { footerColumns } from "@/lib/storefront-data"
+import type { StoreMetadata } from "@/lib/storefront-types"
 
 const socialIconMap: Record<string, IconType> = {
   Facebook: FaFacebookF,
@@ -15,7 +17,7 @@ const socialIconMap: Record<string, IconType> = {
  * Groups consecutive days that share the same open/close times into
  * condensed ranges like "Mon - Sat: 8:00 AM - 5:00 PM".
  */
-function groupHours(hours: typeof storeMetadata.hours) {
+function groupHours(hours: StoreMetadata["hours"]) {
   const groups: { start: string; end: string; open: string; close: string; status: string }[] = []
 
   for (const entry of hours) {
@@ -34,7 +36,9 @@ function groupHours(hours: typeof storeMetadata.hours) {
   })
 }
 
-export function StoreFooter() {
+export async function StoreFooter() {
+  const storeMetadata = await getStorefrontMetadata()
+
   return (
     <footer className="mt-24 bg-black/90 pt-16 text-white">
       <div className="mx-auto grid w-full max-w-[1440px] gap-12 px-8 md:grid-cols-4">

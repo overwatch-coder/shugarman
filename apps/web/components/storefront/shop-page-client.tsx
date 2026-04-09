@@ -6,8 +6,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react"
 
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { ProductCard } from "./product-card"
-import { products } from "@/lib/storefront-data"
-import type { ProductCondition, SortOption } from "@/lib/storefront-types"
+import type { ProductCard as ProductCardData, ProductCondition, SortOption } from "@/lib/storefront-types"
 
 const categories = ["Smartphones", "Tablets", "Laptops", "Wearables"] as const
 const brands = ["Apple", "Samsung"] as const
@@ -40,7 +39,7 @@ function parseSearchParams(searchParams: URLSearchParams) {
   }
 }
 
-export function ShopPageClient() {
+export function ShopPageClient({ products }: { products: ProductCardData[] }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
