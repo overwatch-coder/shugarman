@@ -3,6 +3,29 @@ import { Camera, Globe, MessageCircle } from "lucide-react"
 
 import { footerColumns, storeMetadata } from "@/lib/storefront-data"
 
+/**
+ * Groups consecutive days that share the same open/close times into
+ * condensed ranges like "Mon - Sat: 8:00 AM - 5:00 PM".
+ */
+function groupHours(hours: typeof storeMetadata.hours) {
+  const groups: { start: string; end: string; open: string; close: string; status: string }[] = []
+
+  for (const entry of hours) {
+    const last = groups[groups.length - 1]
+    if (last && last.open === entry.open && last.close === entry.close && last.status === entry.status) {
+      last.end = entry.day
+    } else {
+      groups.push({ start: entry.day, end: entry.day, open: entry.open, close: entry.close, status: entry.status })
+    }
+  }
+
+  return groups.map((g) => {
+    const label = g.start === g.end ? g.start : `${g.start} - ${g.end}`
+    const time = g.status === "closed" ? "Closed" : `${g.open} - ${g.close}`
+    return `${label}: ${time}`
+  })
+}
+
 export function StoreFooter() {
   return (
     <footer className="mt-24 bg-black/90 pt-16 text-white">
@@ -61,12 +84,9 @@ export function StoreFooter() {
             Support
           </h4>
           <div className="space-y-2 font-mono text-xs text-white/65">
-            {storeMetadata.hours.slice(0, 6).map((row) => (
-              <p key={row.day}>
-                {row.day}: {row.open} - {row.close}
-              </p>
+            {groupHours(storeMetadata.hours).map((line) => (
+              <p key={line}>{line}</p>
             ))}
-            <p>Sun: Closed</p>
           </div>
           <div className="mt-6 space-y-2 text-sm text-white/55">
             <p>{storeMetadata.phone}</p>

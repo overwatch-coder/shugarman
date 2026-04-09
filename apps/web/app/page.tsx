@@ -56,15 +56,13 @@ export default function Page() {
 
         <div className="relative flex items-center justify-center">
           <div className="absolute h-[110%] w-[110%] bg-[radial-gradient(circle_at_center,var(--sf-red-glow)_0%,transparent_70%)]" />
-          <div className="rotate-[-12deg] rounded-sm bg-white p-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] dark:shadow-[0_12px_40px_rgba(232,25,44,0.12)]">
-            <Image
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7pROFDzY9XpjUPkznTAy_FhH0rJcNtzDOJ3hSTIo2fAusCZ6vB6nwQhTomvgfOB2xjQof67F0NzGAfdow9pSLobsG0GtdNrWzYIKh5i7fondpmFll6JEJNr765kWXmJsSvHiEPZIIIhtLy1NCWdtRTVchMtstPFZPjpJe6DLZWE9nadMcAYQ1_QmZCK7i-dqh6nX8tHvptZ2AuMcx4T0YIgpQiD_EKDElX9zseTGDueNLNQbk875YeZAHRssw0R58Xih-xIGXToE"
-              alt="Featured iPhone hero product render"
-              width={520}
-              height={520}
-              className="sf-red-glow h-auto w-full max-w-md"
-            />
-          </div>
+          <Image
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7pROFDzY9XpjUPkznTAy_FhH0rJcNtzDOJ3hSTIo2fAusCZ6vB6nwQhTomvgfOB2xjQof67F0NzGAfdow9pSLobsG0GtdNrWzYIKh5i7fondpmFll6JEJNr765kWXmJsSvHiEPZIIIhtLy1NCWdtRTVchMtstPFZPjpJe6DLZWE9nadMcAYQ1_QmZCK7i-dqh6nX8tHvptZ2AuMcx4T0YIgpQiD_EKDElX9zseTGDueNLNQbk875YeZAHRssw0R58Xih-xIGXToE"
+            alt="Featured iPhone hero product render"
+            width={520}
+            height={520}
+            className="relative z-10 h-auto w-full max-w-md -rotate-[8deg] drop-shadow-[0_20px_60px_rgba(232,25,44,0.25)] transition-transform duration-700 hover:-rotate-[2deg]"
+          />
         </div>
       </MotionSection>
 

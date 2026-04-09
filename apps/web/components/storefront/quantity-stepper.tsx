@@ -23,7 +23,7 @@ export function QuantityStepper({
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-md bg-surface-low p-1 text-foreground",
+        "inline-flex items-center rounded-md bg-surface-high text-foreground",
         className
       )}
     >
@@ -31,22 +31,22 @@ export function QuantityStepper({
         type="button"
         aria-label="Decrease quantity"
         onClick={() => updateQuantity(value - 1)}
-        className="flex size-10 items-center justify-center text-content-secondary transition-colors hover:text-primary"
+        className="flex size-9 items-center justify-center text-content-secondary transition-colors hover:text-primary"
       >
-        <Minus className="size-4" />
+        <Minus className="size-3.5" />
       </button>
       <AnimatedCounter
         value={value}
-        className="min-w-12 px-4 text-center font-mono text-sm font-bold"
+        className="min-w-8 px-2 text-center font-mono text-sm font-bold"
         formatter={(nextValue) => String(nextValue).padStart(2, "0")}
       />
       <button
         type="button"
         aria-label="Increase quantity"
         onClick={() => updateQuantity(value + 1)}
-        className="flex size-10 items-center justify-center text-content-secondary transition-colors hover:text-primary"
+        className="flex size-9 items-center justify-center text-content-secondary transition-colors hover:text-primary"
       >
-        <Plus className="size-4" />
+        <Plus className="size-3.5" />
       </button>
     </div>
   )

@@ -15,9 +15,11 @@ function formatPrice(value: number, currency: string) {
 export function ProductCard({
   product,
   showCartAction = true,
+  showHoverCart = false,
 }: {
   product: ProductCardType
   showCartAction?: boolean
+  showHoverCart?: boolean
 }) {
   const badgeLabel =
     product.badge ?? (product.condition === "new" ? "New" : "Refurbished")
@@ -31,43 +33,53 @@ export function ProductCard({
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       whileHover={shouldReduceMotion ? undefined : { y: -4 }}
-      className="group overflow-hidden rounded-xl bg-surface-low sf-card-hover"
+      className="group relative overflow-hidden bg-surface-low sf-card-hover"
     >
-      <div className="relative aspect-square overflow-hidden p-4">
-        <span className="absolute left-4 top-4 z-10 rounded-full bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-tight text-white">
+      <div className="relative aspect-square overflow-hidden bg-surface-high">
+        <span className="absolute left-3 top-3 z-10 rounded bg-primary px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-white">
           {badgeLabel}
         </span>
-        <Link href={`/shop/${product.slug}`} className="flex h-full items-center justify-center">
+        <Link href={`/shop/${product.slug}`} className="block h-full w-full">
           <Image
             src={product.image}
             alt={product.imageAlt}
             width={420}
             height={420}
-            className="h-auto w-4/5 transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
-      </div>
-      <div className="p-6">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <Link href={`/shop/${product.slug}`} className="text-lg font-semibold text-foreground">
-              {product.name}
-            </Link>
-            <p className="mt-1 text-xs text-content-secondary">{product.subtitle}</p>
-          </div>
-          <span className="font-mono text-lg font-bold text-primary">
-            {formatPrice(product.price, product.currency)}
-          </span>
-        </div>
-        {showCartAction ? (
+        {showHoverCart ? (
           <button
             type="button"
             onClick={() => addProductCard(product)}
-            className="inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-primary hover:text-white"
+            className="absolute inset-x-[5%] bottom-3 z-20 flex translate-y-[120%] items-center justify-center rounded-md bg-primary px-4 py-3 text-xs font-black uppercase tracking-[0.15em] text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
           >
-            <ShoppingCart className="size-4" />
+            Add to Cart
           </button>
         ) : null}
+      </div>
+      <div className="space-y-2 px-4 py-3">
+        <div>
+          <Link href={`/shop/${product.slug}`} className="block truncate text-sm font-semibold text-foreground">
+            {product.name}
+          </Link>
+          <p className="mt-0.5 truncate text-xs text-content-secondary">{product.subtitle}</p>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-sm font-bold text-primary">
+            {formatPrice(product.price, product.currency)}
+          </span>
+          {showCartAction ? (
+            <button
+              type="button"
+              onClick={() => addProductCard(product)}
+              aria-label={`Add ${product.name} to cart`}
+              className="inline-flex size-8 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-primary hover:text-white"
+            >
+              <ShoppingCart className="size-3.5" />
+            </button>
+          ) : null}
+        </div>
       </div>
     </motion.div>
   )

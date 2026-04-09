@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, MessageCircle, ShoppingBag, Star } from "lucide-react"
+import { Expand, Heart, MessageCircle, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
 
 import type { ProductDetail } from "@/lib/storefront-types"
@@ -45,6 +45,13 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
         <div className="lg:col-span-7">
           <div className="flex flex-col gap-6 md:flex-row-reverse">
             <div className="relative aspect-[4/5] flex-1 overflow-hidden rounded-xl bg-surface-low">
+              <button
+                type="button"
+                aria-label="Expand image"
+                className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-md transition-colors hover:bg-black/60"
+              >
+                <Expand className="size-4" />
+              </button>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={currentImage.src}
