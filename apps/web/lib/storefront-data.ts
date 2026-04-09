@@ -4,6 +4,7 @@ import type {
   Brand,
   CartItem,
   CartSummary,
+  ContactPageContent,
   FilterState,
   FooterColumn,
   NavLink,
@@ -64,7 +65,7 @@ export const navigationLinks: NavLink[] = [
   { label: "Shop", href: "/shop" },
   { label: "Repairs", href: "/repairs" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Contact", href: "/contact" },
 ]
 
 export const featuredBrands: Brand[] = [
@@ -81,7 +82,7 @@ export const homeCategories: BentoCategory[] = [
   {
     title: "New Phones",
     subtitle: "The latest flagships, sealed and ready.",
-    href: "/shop",
+    href: "/shop?condition=new",
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuAwd8snyiDb8vD17fdgc9f0rlKwPPINUNYK0MnM3CJPrJjEnD3t8vz4Px0EdrwcTvdeI4XRL5QCUfxsSqGKnf_A_9kXjlukkBvz_-LuBYsCQTXxjsSvG7_vPPZKuoPQF0RDYiTvh_8LkNq7JqmGdtBcw562s6KArHjUAVax7LGzWFResWmqkD_ubXUJCtriw8YIOV8v-JZcDdab1STUYXCTd9KGUjhhB2lC-JOxnZ0EqptWxoEHpyXzrkDTZBrCQ7FairY9R0VUeRM",
     imageAlt:
@@ -90,7 +91,7 @@ export const homeCategories: BentoCategory[] = [
   },
   {
     title: "Refurbished",
-    href: "/shop",
+    href: "/shop?condition=refurbished",
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuA2JXc7QatZzTcQDKSZW23IG5zgU1_IPIryJ9IjT16ktVagqHXJCbVMxIzdfW4Ljgl7S6dkMdz8YVw1CK1uGTToQ1VwpxoDKej8kzGFSt7p87WVy5SrzsyMqCXtI7H0kKqGivC-rKfCyLoAdIfAnczqQBTjr-kpIFzLkBfWr4Sun92Rw9qqeuWVKKnnT6yq1f9dZP0XwY9ojv0sc9RbgOt7BJ3i-sLMuRO_Q0M6PMl6xoVXl93sQeHdMloWOOs1HgjSzzblEUG71qQ",
     imageAlt: "A refurbished iPhone with premium studio lighting.",
@@ -98,7 +99,7 @@ export const homeCategories: BentoCategory[] = [
   },
   {
     title: "Accessories",
-    href: "/shop",
+    href: "/shop?category=Accessories",
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuCLPMEZCOhMW3UmslazRPPRyC4DGhzzIwcgLnQiWSDN0G3EC1Kxke1hW736JlKN_wzIyxLL7l61zTaLPaAwTLnJaOf5Lh-k13X6aFWObKT_xExLu5qVIjxEVfABiYecYGjVHohOoaCr1Zdf7LAbQu79RnNgu3tiZAoNK-mFCxJbM9upXazUVzzTiYKCOhgXk5Aa4nNmt7Anbh9DeYBVi5Jz7bLiV0GBDhJMIMcXXnj9YTaH5r8xpqTd065tmJL5hD6GxSma5CF6l54",
     imageAlt: "Accessories arranged on a dark textured surface.",
@@ -144,8 +145,8 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "Explore",
     links: [
-      { label: "New Releases", href: "/shop" },
-      { label: "Certified Refurbished", href: "/shop" },
+      { label: "New Releases", href: "/shop?condition=new&sort=newest" },
+      { label: "Certified Refurbished", href: "/shop?condition=refurbished" },
       { label: "Technical Repairs", href: "/repairs" },
       { label: "Trade-in Program", href: "#trade-in" },
     ],
@@ -641,4 +642,64 @@ export const aboutPageContent: AboutPageContent = {
     { label: "Repairs Completed", value: "500+" },
     { label: "Brands Carried", value: "7+" },
   ],
+}
+
+/* ==========================================================================
+   Contact Page Content
+   ========================================================================== */
+
+export const contactPageContent: ContactPageContent = {
+  hero: {
+    badge: "Get in Touch",
+    headline: "We're Here to Help",
+    subheadline:
+      "Have a question about a phone, a repair, or an installment plan? Reach out through any channel below and we'll respond promptly.",
+  },
+  channels: [
+    {
+      id: "whatsapp",
+      icon: "whatsapp",
+      label: "WhatsApp",
+      value: "0558 694 853",
+      href: "https://wa.me/233558694853",
+      description: "Fastest response. Chat with us directly — product queries, repair bookings, anything.",
+      cta: "Open WhatsApp Chat",
+    },
+    {
+      id: "phone",
+      icon: "phone",
+      label: "Call Us",
+      value: "0558 694 853",
+      href: "tel:+233558694853",
+      description: "Prefer a call? Ring us during business hours Mon – Sat, 8:00 AM – 5:00 PM.",
+      cta: "Call Now",
+    },
+    {
+      id: "phone-alt",
+      icon: "phone-call",
+      label: "Alternate Line",
+      value: "0595 458 055",
+      href: "tel:+233595458055",
+      description: "Secondary line available during store hours if the primary is busy.",
+      cta: "Call Alternate",
+    },
+    {
+      id: "email",
+      icon: "mail",
+      label: "Email",
+      value: "fosuemmanuel2001@gmail.com",
+      href: "mailto:fosuemmanuel2001@gmail.com",
+      description: "For detailed inquiries, quotations, or business partnerships. We reply within 24 hours.",
+      cta: "Send an Email",
+    },
+  ],
+  inquiryTypes: [
+    { value: "general", label: "General Inquiry" },
+    { value: "product", label: "Product & Pricing" },
+    { value: "repair", label: "Device Repair" },
+    { value: "installment", label: "Installment Plans" },
+    { value: "trade-in", label: "Trade-in" },
+    { value: "other", label: "Other" },
+  ],
+  mapEmbedNote: "Asempa Pharmacy Building, near Otumfour Statue, Adum, Kumasi, Ghana",
 }

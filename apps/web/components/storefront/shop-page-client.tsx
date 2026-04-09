@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState, useCallback } from "react"
+import { useMemo, useCallback } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
@@ -19,26 +20,82 @@ const swatches = [
 
 const ITEMS_PER_PAGE = 16
 
+function parseSearchParams(searchParams: URLSearchParams) {
+  const selectedCategories = searchParams.getAll("category")
+  const selectedBrand = searchParams.get("brand")
+  const selectedCondition = searchParams.get("condition") as ProductCondition | null
+  const selectedColor = searchParams.get("color")
+  const maxPrice = searchParams.get("maxPrice")
+  const sort = (searchParams.get("sort") ?? "featured") as SortOption
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1"))
+
+  return {
+    selectedCategories,
+    selectedBrand,
+    selectedCondition,
+    selectedColor,
+    priceRange: [0, maxPrice ? Number(maxPrice) : 15000] as [number, number],
+    sort,
+    currentPage: page,
+  }
+}
+
 export function ShopPageClient() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
-  const [selectedCondition, setSelectedCondition] = useState<ProductCondition | null>(null)
-  const [selectedColor, setSelectedColor] = useState<string | null>(null)
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000])
-  const [sort, setSort] = useState<SortOption>("featured")
-  const [currentPage, setCurrentPage] = useState(1)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const toggleCategory = useCallback((category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
-    )
-    setCurrentPage(1)
-  }, [])
+  const {
+    selectedCategories,
+    selectedBrand,
+    selectedCondition,
+    selectedColor,
+    priceRange,
+    sort,
+    currentPage,
+  } = parseSearchParams(searchParams)
 
-  const toggleCondition = useCallback((condition: ProductCondition) => {
-    setSelectedCondition((prev) => (prev === condition ? null : condition))
-    setCurrentPage(1)
-  }, [])
+  const updateParams = useCallback(
+    (updates: Record<string, string | string[] | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+
+      for (const [key, value] of Object.entries(updates)) {
+        params.delete(key)
+        if (value === null) continue
+        if (Array.isArray(value)) {
+          for (const v of value) params.append(key, v)
+        } else {
+          params.set(key, value)
+        }
+      }
+
+      // Reset page when filters change (unless page itself is being set)
+      if (!("page" in updates)) {
+        params.delete("page")
+      }
+
+      const query = params.toString()
+      router.push(query ? `${pathname}?${query}` : pathname, { scroll: false })
+    },
+    [searchParams, router, pathname]
+  )
+
+  const toggleCategory = useCallback(
+    (category: string) => {
+      const next = selectedCategories.includes(category)
+        ? selectedCategories.filter((c) => c !== category)
+        : [...selectedCategories, category]
+      updateParams({ category: next.length > 0 ? next : null })
+    },
+    [selectedCategories, updateParams]
+  )
+
+  const toggleCondition = useCallback(
+    (condition: ProductCondition) => {
+      updateParams({ condition: selectedCondition === condition ? null : condition })
+    },
+    [selectedCondition, updateParams]
+  )
 
   const filteredProducts = useMemo(() => {
     const nextProducts = products.filter((product) => {
@@ -61,9 +118,10 @@ export function ShopPageClient() {
   }, [selectedBrand, selectedCondition, priceRange, sort])
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
+  const safePage = Math.min(currentPage, totalPages)
   const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
   )
 
   const activeFilters: { label: string; onRemove: () => void }[] = useMemo(() => {
@@ -74,30 +132,25 @@ export function ShopPageClient() {
     }
 
     if (selectedBrand) {
-      chips.push({ label: selectedBrand, onRemove: () => { setSelectedBrand(null); setCurrentPage(1) } })
+      chips.push({ label: selectedBrand, onRemove: () => updateParams({ brand: null }) })
     }
 
     if (selectedCondition) {
       chips.push({
         label: selectedCondition === "new" ? "New" : "Refurbished",
-        onRemove: () => { setSelectedCondition(null); setCurrentPage(1) },
+        onRemove: () => updateParams({ condition: null }),
       })
     }
 
     if (selectedColor) {
-      chips.push({ label: selectedColor, onRemove: () => setSelectedColor(null) })
+      chips.push({ label: selectedColor, onRemove: () => updateParams({ color: null }) })
     }
 
     return chips
-  }, [selectedCategories, selectedBrand, selectedCondition, selectedColor, toggleCategory])
+  }, [selectedCategories, selectedBrand, selectedCondition, selectedColor, toggleCategory, updateParams])
 
   function clearAll() {
-    setSelectedCategories([])
-    setSelectedBrand(null)
-    setSelectedCondition(null)
-    setSelectedColor(null)
-    setPriceRange([0, 15000])
-    setCurrentPage(1)
+    router.push(pathname, { scroll: false })
   }
 
   return (
@@ -139,7 +192,7 @@ export function ShopPageClient() {
                   type="radio"
                   name="brand"
                   checked={selectedBrand === brand}
-                  onChange={() => { setSelectedBrand(brand); setCurrentPage(1) }}
+                  onChange={() => updateParams({ brand })}
                   className="accent-primary"
                 />
                 <span>{brand}</span>
@@ -160,8 +213,8 @@ export function ShopPageClient() {
               step={100}
               value={priceRange[1]}
               onChange={(e) => {
-                setPriceRange([priceRange[0], Number(e.target.value)])
-                setCurrentPage(1)
+                const val = Number(e.target.value)
+                updateParams({ maxPrice: val < 15000 ? String(val) : null })
               }}
               className="w-full accent-primary"
             />
@@ -203,7 +256,7 @@ export function ShopPageClient() {
               <button
                 key={swatch.hex}
                 type="button"
-                onClick={() => setSelectedColor(selectedColor === swatch.label ? null : swatch.label)}
+                onClick={() => updateParams({ color: selectedColor === swatch.label ? null : swatch.label })}
                 aria-label={`Color ${swatch.label}`}
                 className={
                   selectedColor === swatch.label
@@ -231,7 +284,7 @@ export function ShopPageClient() {
             <span className="pl-4 text-[10px] font-bold uppercase tracking-[0.15em] text-content-secondary">Sort by</span>
             <select
               value={sort}
-              onChange={(event) => { setSort(event.target.value as SortOption); setCurrentPage(1) }}
+              onChange={(event) => updateParams({ sort: event.target.value === "featured" ? null : event.target.value })}
               className="border-none bg-transparent px-3 py-2.5 text-xs font-bold text-foreground outline-none [&>option]:bg-neutral-900 [&>option]:text-white"
             >
               <option value="featured">Featured</option>
@@ -284,8 +337,8 @@ export function ShopPageClient() {
           <MotionSection className="mt-16 flex items-center justify-center gap-2" delay={0.08}>
             <button
               type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={safePage <= 1}
+              onClick={() => updateParams({ page: String(safePage - 1) })}
               className="flex size-10 items-center justify-center bg-surface-low text-content-secondary disabled:opacity-30"
             >
               <ChevronLeft className="size-4" />
@@ -294,9 +347,9 @@ export function ShopPageClient() {
               <button
                 key={page}
                 type="button"
-                onClick={() => setCurrentPage(page)}
+                onClick={() => updateParams({ page: page === 1 ? null : String(page) })}
                 className={
-                  page === currentPage
+                  page === safePage
                     ? "flex size-10 items-center justify-center bg-primary text-xs font-bold text-white"
                     : "flex size-10 items-center justify-center bg-surface-low text-xs font-bold text-foreground hover:bg-surface-high"
                 }
@@ -306,8 +359,8 @@ export function ShopPageClient() {
             ))}
             <button
               type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={safePage >= totalPages}
+              onClick={() => updateParams({ page: String(safePage + 1) })}
               className="flex size-10 items-center justify-center bg-surface-low text-content-secondary disabled:opacity-30"
             >
               <ChevronRight className="size-4" />

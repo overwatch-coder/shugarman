@@ -29,7 +29,7 @@ export function StoreHeader() {
             const active =
               link.href === "/"
                 ? pathname === "/"
-                : link.href !== "#repairs" && link.href !== "#about" && link.href !== "#contact" && pathname.startsWith(link.href)
+                : !link.href.startsWith("#") && pathname.startsWith(link.href)
 
             return (
               <Link

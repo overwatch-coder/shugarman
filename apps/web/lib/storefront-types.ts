@@ -213,3 +213,34 @@ export interface AboutPageContent {
   team: TeamMember[];
   stats: { label: string; value: string }[];
 }
+
+/* ---------- Contact page ---------- */
+
+export type ContactInquiryType =
+  | "general"
+  | "product"
+  | "repair"
+  | "installment"
+  | "trade-in"
+  | "other"
+
+export interface ContactChannel {
+  id: string;
+  icon: string;
+  label: string;
+  value: string;
+  href: string;
+  description: string;
+  cta: string;
+}
+
+export interface ContactPageContent {
+  hero: {
+    badge: string;
+    headline: string;
+    subheadline: string;
+  };
+  channels: ContactChannel[];
+  inquiryTypes: { value: ContactInquiryType; label: string }[];
+  mapEmbedNote: string;
+}

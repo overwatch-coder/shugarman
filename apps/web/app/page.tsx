@@ -126,7 +126,7 @@ export default function Page() {
               Priced for precision // limited stock
             </p>
           </div>
-          <Link href="/shop" className="text-sm font-bold uppercase tracking-[0.18em] text-primary">
+          <Link href="/shop?sort=price-asc" className="text-sm font-bold uppercase tracking-[0.18em] text-primary">
             View All Deals
           </Link>
         </div>
