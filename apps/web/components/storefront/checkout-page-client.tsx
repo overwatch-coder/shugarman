@@ -11,8 +11,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 
@@ -315,60 +313,105 @@ export function CheckoutPageClient() {
   return (
     <MotionPage className="py-12">
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent showCloseButton={false} className="max-w-[560px] overflow-hidden border-none bg-surface p-0 text-foreground ring-1 ring-white/10">
-          <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(232,25,44,0.18),transparent_65%)] p-8 sm:p-10">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-            <DialogHeader className="items-center text-center">
+        <DialogContent
+          showCloseButton={false}
+          className="max-h-[92dvh] w-[90vw] max-w-[480px] overflow-y-auto rounded-2xl border border-white/10 bg-[#1a1a1a] p-0 text-foreground shadow-2xl"
+        >
+          <div className="flex flex-col items-center px-10 pt-12 pb-10 text-center">
+            {/* Green check icon with glow */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="relative flex size-24 items-center justify-center"
+            >
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-full bg-emerald-500/15" />
               <motion.div
-                initial={{ opacity: 0, scale: 0.82 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                className="relative mx-auto flex size-24 items-center justify-center rounded-full border border-primary/30 bg-primary/10"
-              >
+                animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-full bg-emerald-500/10"
+              />
+              {/* Inner badge */}
+              <div className="relative flex size-16 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/15 shadow-[0_0_40px_rgba(16,185,129,0.25)]">
                 <motion.div
-                  initial={{ scale: 0.9, opacity: 0.45 }}
-                  animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.15, 0.35] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 rounded-full border border-primary/40"
-                />
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.14, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.15, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <CheckCircle2 className="size-11 text-primary" />
+                  <CheckCircle2 className="size-9 text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
                 </motion.div>
-              </motion.div>
-              <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.28em] text-primary">Success confirmed</p>
-              <DialogTitle className="font-display text-5xl uppercase tracking-tight text-foreground">
+              </div>
+            </motion.div>
+
+            {/* Title */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.32 }}
+            >
+              <DialogTitle className="mt-8 font-display text-[2.5rem] font-black uppercase italic leading-none tracking-tight text-white">
                 Order Locked In
               </DialogTitle>
-              <DialogDescription className="mx-auto max-w-md text-center text-sm leading-7 text-content-secondary">
-                Your device request has been staged successfully. A {storeMetadata.name} specialist will confirm payment and delivery details through WhatsApp or phone shortly.
+            </motion.div>
+
+            {/* Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.26, duration: 0.28 }}
+            >
+              <DialogDescription className="mt-4 max-w-xs text-base leading-relaxed text-neutral-400">
+                Your order has been placed successfully. A {storeMetadata.name} specialist will reach out to confirm details shortly.
               </DialogDescription>
-            </DialogHeader>
+            </motion.div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="bg-surface-high p-4 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-content-secondary">Customer</p>
-                <p className="mt-3 text-sm font-medium text-foreground">{shippingAddress.firstName} {shippingAddress.lastName}</p>
-                <p className="mt-1 text-sm text-content-secondary">{shippingAddress.phone}</p>
+            {/* Info summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.34, duration: 0.28 }}
+              className="mt-8 w-full grid gap-3 sm:grid-cols-2"
+            >
+              <div className="rounded-xl border border-white/8 bg-white/5 px-5 py-4 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">Customer</p>
+                <p className="mt-2 text-sm font-bold text-white">
+                  {shippingAddress.firstName} {shippingAddress.lastName}
+                </p>
+                <p className="mt-0.5 text-sm text-neutral-400">{shippingAddress.phone}</p>
               </div>
-              <div className="bg-surface-high p-4 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-content-secondary">Fulfillment</p>
-                <p className="mt-3 text-sm font-medium text-foreground">{shippingMethod?.label ?? "Pending confirmation"}</p>
-                <p className="mt-1 text-sm text-content-secondary">{paymentMethod?.type ?? "Pending confirmation"}</p>
+              <div className="rounded-xl border border-white/8 bg-white/5 px-5 py-4 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">Fulfillment</p>
+                <p className="mt-2 text-sm font-bold text-white">
+                  {shippingMethod?.label ?? "Pending"}
+                </p>
+                <p className="mt-0.5 text-sm capitalize text-neutral-400">
+                  {paymentMethod?.type ?? "Pending"}
+                </p>
               </div>
-            </div>
+            </motion.div>
 
-            <DialogFooter className="mt-8 -mx-8 -mb-8 border-white/5 bg-surface-low px-8 py-6 sm:-mx-10 sm:-mb-10 sm:px-10">
-              <Button variant="outline" onClick={() => { clearCart(); reset(); }}>
-                Start New Checkout
-              </Button>
-              <Button asChild>
+            {/* CTA Button — full width, bold, big padding like inspiration */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.42, duration: 0.28 }}
+              className="mt-10 flex w-full flex-col gap-3"
+            >
+              <Button
+                asChild
+                className="w-full rounded-xl bg-emerald-500 py-7 text-lg font-black uppercase italic tracking-wide text-white shadow-lg hover:bg-emerald-600"
+              >
                 <Link href="/shop">Continue Shopping</Link>
               </Button>
-            </DialogFooter>
+              <button
+                type="button"
+                onClick={() => { clearCart(); reset(); }}
+                className="w-full py-3 text-sm font-semibold uppercase tracking-wider text-neutral-500 transition-colors hover:text-white"
+              >
+                Start New Checkout
+              </button>
+            </motion.div>
           </div>
         </DialogContent>
       </Dialog>
