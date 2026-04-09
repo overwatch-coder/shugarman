@@ -315,7 +315,7 @@ export function CheckoutPageClient() {
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
         <DialogContent
           showCloseButton={false}
-          className="max-h-[92dvh] w-[90vw] max-w-[480px] overflow-y-auto rounded-2xl border border-white/10 bg-[#1a1a1a] p-0 text-foreground shadow-2xl"
+          className="max-h-[90dvh] !max-w-[540px] overflow-y-auto rounded-2xl border border-white/10 bg-[#1a1a1a] p-0 text-foreground shadow-2xl"
         >
           <div className="flex flex-col items-center px-10 pt-12 pb-10 text-center">
             {/* Green check icon with glow */}
