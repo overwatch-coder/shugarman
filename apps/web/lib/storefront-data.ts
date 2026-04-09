@@ -1,4 +1,5 @@
 import type {
+  AboutPageContent,
   BentoCategory,
   Brand,
   CartItem,
@@ -8,6 +9,7 @@ import type {
   NavLink,
   ProductCard,
   ProductDetail,
+  RepairsPageContent,
   StoreMetadata,
   TrustPoint,
 } from "./storefront-types"
@@ -60,8 +62,8 @@ export const storeMetadata: StoreMetadata = {
 export const navigationLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
-  { label: "Repairs", href: "#repairs" },
-  { label: "About", href: "#about" },
+  { label: "Repairs", href: "/repairs" },
+  { label: "About", href: "/about" },
   { label: "Contact", href: "#contact" },
 ]
 
@@ -104,7 +106,7 @@ export const homeCategories: BentoCategory[] = [
   },
   {
     title: "Repairs",
-    href: "#repairs",
+    href: "/repairs",
     icon: "wrench",
     variant: "medium",
   },
@@ -144,13 +146,14 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { label: "New Releases", href: "/shop" },
       { label: "Certified Refurbished", href: "/shop" },
-      { label: "Technical Repairs", href: "#repairs" },
+      { label: "Technical Repairs", href: "/repairs" },
       { label: "Trade-in Program", href: "#trade-in" },
     ],
   },
   {
     title: "Company",
     links: [
+      { label: "About Us", href: "/about" },
       { label: "Privacy Policy", href: "#privacy" },
       { label: "Terms of Service", href: "#terms" },
       { label: "Shipping Info", href: "#shipping" },
@@ -339,4 +342,303 @@ export const cartSummary: CartSummary = {
   currency: "GHC",
   installmentMonthly: 4425.2,
   installmentMonths: 12,
+}
+
+/* ==========================================================================
+   Repairs Page Content
+   ========================================================================== */
+
+export const repairsPageContent: RepairsPageContent = {
+  hero: {
+    badge: "Certified Repair Centre",
+    headline: "Expert Device Repair You Can Trust",
+    subheadline:
+      "From cracked screens to battery swaps, our certified technicians restore your device to peak condition — fast, affordable, and warranty-backed.",
+    ctaLabel: "Book a Repair via WhatsApp",
+    ctaHref: "https://wa.me/233558694853",
+  },
+  categories: [
+    {
+      id: "screen",
+      title: "Screen & Display",
+      description: "Original or premium OEM-quality replacements with full touch calibration.",
+      services: [
+        {
+          id: "iphone-screen",
+          name: "iPhone Screen Replacement",
+          description: "OLED / LCD replacement with touch and Face ID calibration. Original quality parts.",
+          icon: "smartphone",
+          priceFrom: 350,
+          currency: "GHC",
+          turnaround: "1 – 2 hours",
+          warranty: "90 days",
+          popular: true,
+        },
+        {
+          id: "samsung-screen",
+          name: "Samsung Screen Replacement",
+          description: "Super AMOLED replacements for all Galaxy S and A series models.",
+          icon: "smartphone",
+          priceFrom: 320,
+          currency: "GHC",
+          turnaround: "1 – 3 hours",
+          warranty: "90 days",
+        },
+        {
+          id: "other-screen",
+          name: "Other Brand Screens",
+          description: "Tecno, Infinix, Huawei, Oppo and Realme screen replacements.",
+          icon: "smartphone",
+          priceFrom: 180,
+          currency: "GHC",
+          turnaround: "Same day",
+          warranty: "60 days",
+        },
+      ],
+    },
+    {
+      id: "battery",
+      title: "Battery & Charging",
+      description: "Restore all-day battery life with genuine-spec cells and charge port servicing.",
+      services: [
+        {
+          id: "battery-replace",
+          name: "Battery Replacement",
+          description: "Genuine-capacity battery swap for iPhone, Samsung and most Android brands.",
+          icon: "battery-charging",
+          priceFrom: 150,
+          currency: "GHC",
+          turnaround: "30 – 60 mins",
+          warranty: "60 days",
+          popular: true,
+        },
+        {
+          id: "charge-port",
+          name: "Charging Port Repair",
+          description: "Clean, repair or replace USB-C / Lightning ports that won't charge or sync.",
+          icon: "plug",
+          priceFrom: 120,
+          currency: "GHC",
+          turnaround: "1 – 2 hours",
+          warranty: "60 days",
+        },
+      ],
+    },
+    {
+      id: "water",
+      title: "Water & Physical Damage",
+      description: "Ultrasonic cleaning and component-level board repair for liquid and impact damage.",
+      services: [
+        {
+          id: "water-damage",
+          name: "Water Damage Treatment",
+          description: "Disassembly, ultrasonic board cleaning and corrosion treatment to recover your device.",
+          icon: "droplets",
+          priceFrom: null,
+          currency: "GHC",
+          turnaround: "24 – 48 hours",
+          warranty: "30 days",
+        },
+        {
+          id: "back-glass",
+          name: "Back Glass Replacement",
+          description: "Restore the original look and structural integrity with a premium back glass panel.",
+          icon: "layers",
+          priceFrom: 200,
+          currency: "GHC",
+          turnaround: "2 – 4 hours",
+          warranty: "60 days",
+        },
+      ],
+    },
+    {
+      id: "software",
+      title: "Software & Diagnostics",
+      description: "Professional flashing, unlocking, data transfer and full device health checks.",
+      services: [
+        {
+          id: "software-repair",
+          name: "Software Repair & Flashing",
+          description: "Fix bootloops, factory reset, OS reinstall and network unlock for all brands.",
+          icon: "terminal",
+          priceFrom: 80,
+          currency: "GHC",
+          turnaround: "1 – 3 hours",
+          warranty: "N/A",
+        },
+        {
+          id: "data-transfer",
+          name: "Data Transfer & Backup",
+          description: "Safe migration of contacts, photos, messages and apps to your new or repaired device.",
+          icon: "hard-drive",
+          priceFrom: 60,
+          currency: "GHC",
+          turnaround: "1 – 2 hours",
+          warranty: "N/A",
+        },
+        {
+          id: "diagnostics",
+          name: "Full Device Diagnostics",
+          description: "Comprehensive 30-point health check with written report — free with any repair.",
+          icon: "stethoscope",
+          priceFrom: 50,
+          currency: "GHC",
+          turnaround: "Under 30 mins",
+          warranty: "N/A",
+        },
+      ],
+    },
+  ],
+  whyChooseUs: [
+    {
+      icon: "badge-check",
+      title: "Certified Technicians",
+      description:
+        "Our engineers are trained on Apple, Samsung and Android platforms to deliver precision repairs.",
+    },
+    {
+      icon: "shield-check",
+      title: "Warranty on Every Repair",
+      description:
+        "All repairs come with a 30 – 90 day warranty. If the same fault returns, we fix it for free.",
+    },
+    {
+      icon: "clock",
+      title: "Fast Turnaround",
+      description:
+        "Most screen and battery repairs are done within the hour while you wait in-store.",
+    },
+    {
+      icon: "wallet",
+      title: "Transparent Pricing",
+      description:
+        "We quote before we start. No hidden costs, no surprises — just honest repair pricing.",
+    },
+  ],
+  faqs: [
+    {
+      question: "How long does a typical repair take?",
+      answer:
+        "Screen and battery replacements usually take 30 minutes to 2 hours. Water damage and board-level repairs may take 24 – 48 hours. We'll give you a precise estimate when you bring in your device.",
+    },
+    {
+      question: "Do you use original parts?",
+      answer:
+        "We use OEM-quality or genuine manufacturer parts for all screen and battery replacements. We'll always let you know the part grade before starting.",
+    },
+    {
+      question: "Will my data be safe?",
+      answer:
+        "Yes. We never wipe your data without your explicit consent. For water-damage cases we recommend a backup first — we can help with that too.",
+    },
+    {
+      question: "Can I track the status of my repair?",
+      answer:
+        "Absolutely. Drop us a WhatsApp message with your name and we'll send you a real-time update on your device's status.",
+    },
+    {
+      question: "Do you repair devices still under manufacturer warranty?",
+      answer:
+        "Third-party repairs may void the manufacturer warranty. We'll advise you on the best route — including referral to the official service centre if that's what's best for you.",
+    },
+  ],
+}
+
+/* ==========================================================================
+   About Page Content
+   ========================================================================== */
+
+export const aboutPageContent: AboutPageContent = {
+  hero: {
+    badge: "Kumasi's Trusted Phone Store",
+    headline: "We Believe Every Person Deserves a Great Phone",
+    subheadline:
+      "Sugar Man iStore was built on one simple conviction: premium smartphones shouldn't be out of reach for anyone in Kumasi.",
+  },
+  story: {
+    heading: "Our Story",
+    paragraphs: [
+      "Sugar Man iStore opened its doors in the heart of Kumasi's Adum district with a singular mission — to make world-class smartphones accessible to every Ghanaian. We've seen how a great device can transform education, business and daily life, and we wanted to be the store that breaks down the price barrier.",
+      "Located at the iconic Asempa Pharmacy Building near the Otumfour Statue, we've grown from a small retail counter into Kumasi's go-to destination for new phones, certified refurbished devices, expert repairs, and flexible installment plans that fit real budgets.",
+      "Every phone we sell is personally vetted. Every repair is done by trained technicians. And every customer walks out knowing we stand behind our work.",
+    ],
+  },
+  mission: {
+    heading: "Our Mission",
+    statement:
+      "To democratize access to premium mobile technology in Ghana — sold with integrity, backed by expertise, and built around the community we serve.",
+  },
+  values: [
+    {
+      icon: "heart-handshake",
+      title: "Community First",
+      description:
+        "We are a Kumasi store, serving Kumasi people. Every decision we make puts our community's needs at the centre.",
+    },
+    {
+      icon: "badge-check",
+      title: "Integrity in Every Sale",
+      description:
+        "No hidden fees, no misleading specs. We give honest advice even if it means recommending a cheaper device.",
+    },
+    {
+      icon: "zap",
+      title: "Expertise You Can Rely On",
+      description:
+        "Our team keeps up with every new release and repair technique so you get accurate guidance every time.",
+    },
+    {
+      icon: "users",
+      title: "Flexible for Everyone",
+      description:
+        "50% down and the rest over 12 weeks. We built installment plans so no one is priced out of their dream device.",
+    },
+  ],
+  milestones: [
+    {
+      year: "2021",
+      title: "Store Opens",
+      description: "Sugar Man iStore launches in Adum, Kumasi, selling new and refurbished smartphones.",
+    },
+    {
+      year: "2022",
+      title: "Repair Centre Launched",
+      description: "We hire certified technicians and open a dedicated repair station for all major brands.",
+    },
+    {
+      year: "2023",
+      title: "Installment Plans Introduced",
+      description: "Our 50% down / 12-week payment plan makes premium phones accessible to thousands more customers.",
+    },
+    {
+      year: "2024",
+      title: "Social Community Grows",
+      description: "15 000+ followers across Instagram and TikTok, sharing unboxings, reviews and repair tips.",
+    },
+    {
+      year: "2025",
+      title: "iStore.com Launches",
+      description: "Our online storefront goes live, bringing the Sugar Man iStore experience to all of Ghana.",
+    },
+  ],
+  team: [
+    {
+      id: "emmanuel",
+      name: "Emmanuel Fosu",
+      role: "Founder & CEO",
+      bio: "Emmanuel founded Sugar Man iStore with a passion for making great technology accessible. He personally oversees every product selection and pricing decision.",
+    },
+    {
+      id: "repair-lead",
+      name: "Repair Team",
+      role: "Certified Technicians",
+      bio: "Our technicians are trained on Apple, Samsung and Android platforms. They bring precision, speed and transparency to every job that comes through the door.",
+    },
+  ],
+  stats: [
+    { label: "Phones Sold", value: "2,000+" },
+    { label: "Happy Customers", value: "1,800+" },
+    { label: "Repairs Completed", value: "500+" },
+    { label: "Brands Carried", value: "7+" },
+  ],
 }

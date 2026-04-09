@@ -137,3 +137,79 @@ export interface TrustPoint {
   title: string;
   description: string;
 }
+
+/* ---------- Repairs page ---------- */
+
+export interface RepairService {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  /** Starting price in GHC. Null means "call for quote". */
+  priceFrom: number | null;
+  currency: string;
+  turnaround: string;
+  warranty: string;
+  popular?: boolean;
+}
+
+export interface RepairCategory {
+  id: string;
+  title: string;
+  description?: string;
+  services: RepairService[];
+}
+
+export interface RepairFAQ {
+  question: string;
+  answer: string;
+}
+
+export interface RepairsPageContent {
+  hero: {
+    headline: string;
+    subheadline: string;
+    ctaLabel: string;
+    ctaHref: string;
+    badge: string;
+  };
+  categories: RepairCategory[];
+  whyChooseUs: { icon: string; title: string; description: string }[];
+  faqs: RepairFAQ[];
+}
+
+/* ---------- About page ---------- */
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image?: string;
+}
+
+export interface Milestone {
+  year: string;
+  title: string;
+  description: string;
+}
+
+export interface AboutPageContent {
+  hero: {
+    headline: string;
+    subheadline: string;
+    badge: string;
+  };
+  story: {
+    heading: string;
+    paragraphs: string[];
+  };
+  mission: {
+    heading: string;
+    statement: string;
+  };
+  values: { icon: string; title: string; description: string }[];
+  milestones: Milestone[];
+  team: TeamMember[];
+  stats: { label: string; value: string }[];
+}
