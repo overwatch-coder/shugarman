@@ -13,7 +13,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setError("")
     setLoading(true)
@@ -21,6 +21,7 @@ export default function AdminLoginPage() {
     try {
       const auth = getFirebaseAuth()
       const credential = await signInWithEmailAndPassword(auth, email, password)
+      console.log("Firebase sign-in successful:", credential)
       const idToken = await credential.user.getIdToken()
       const result = await createSession(idToken)
 
