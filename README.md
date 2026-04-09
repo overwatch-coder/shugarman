@@ -1,21 +1,109 @@
-# shadcn/ui monorepo template
+# Shugarman iStore Monorepo
 
-This is a Next.js monorepo template with shadcn/ui.
+This workspace contains the Next.js storefront app in `apps/web` plus the supporting scripts used to seed Firestore and bootstrap admin access.
 
-## Adding components
+## Common Commands
 
-To add components to your app, run the following command at the root of your `web` app:
+Run these from the monorepo root:
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+npm run seed:firestore
+npm run admin:create -- --password "your-password"
+npm run admin:rotate-password -- --password "new-password"
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+The root scripts forward to the `web` workspace so you do not need to remember the `--workspace web` prefix.
 
-## Using components
+## Firestore Seed Script
 
-To use the components in your app, import them from the `ui` package.
+Seeds catalog data into Firestore.
 
-```tsx
-import { Button } from "@workspace/ui/components/button";
+```bash
+npm run seed:firestore
 ```
+
+Dry run:
+
+```bash
+npm run seed:firestore -- --dry-run
+```
+
+Behavior:
+
+- upserts `products/{slug}` from the storefront mock catalog
+- upserts `categories/{slug}` for the shop category set
+- preserves valid existing `createdAt` for seeded product docs
+
+## Admin Bootstrap Script
+
+Creates or updates a Firebase Auth user and upserts the matching Firestore admin document.
+
+Default email:
+
+```bash
+npm run admin:create -- --password "your-password"
+```
+
+Custom email:
+
+```bash
+npm run admin:create -- --email "other-admin@example.com" --password "your-password"
+```
+
+Custom display name:
+
+```bash
+npm run admin:create -- --email "other-admin@example.com" --password "your-password" --display-name "Admin Name"
+```
+
+Dry run:
+
+```bash
+npm run admin:create -- --password "your-password" --dry-run
+```
+
+Default behavior:
+
+- default email: `bellamoner98@gmail.com`
+- default display name: `Bella Moner`
+- Firestore role: `admin`
+- Firestore path: `admins/{uid}`
+
+## Admin Password Rotation Script
+
+Updates the Firebase Auth password only. It does not read or write Firestore.
+
+Default email:
+
+```bash
+npm run admin:rotate-password -- --password "new-password"
+```
+
+Custom email:
+
+```bash
+npm run admin:rotate-password -- --email "other-admin@example.com" --password "new-password"
+```
+
+Dry run:
+
+```bash
+npm run admin:rotate-password -- --password "new-password" --dry-run
+```
+
+## Environment
+
+These scripts load `apps/web/.env.local` automatically and require the Firebase Admin env vars to be present there:
+
+- `FIREBASE_ADMIN_PROJECT_ID`
+- `FIREBASE_ADMIN_CLIENT_EMAIL`
+- `FIREBASE_ADMIN_PRIVATE_KEY`
+
+They also depend on the client Firebase config already present in the same file for normal app login flows.
+
+## Login Flow After Bootstrap
+
+1. Run the admin bootstrap command once.
+2. Open the admin login page in the app.
+3. Sign in with the same email and password you created.
+4. The app verifies both Firebase Auth and the Firestore `admins/{uid}` document before creating the admin session.

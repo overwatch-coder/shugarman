@@ -62,6 +62,13 @@ export interface ProductDoc {
   updatedAt: string    // ISO timestamp
 }
 
+/** Firestore: /categories/{slug} */
+export interface CategoryDoc {
+  slug: string
+  name: string
+  order: number
+}
+
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export type OrderStatus =
@@ -159,7 +166,7 @@ export interface StoreSettingsDoc {
 
 // ─── Admin Users ──────────────────────────────────────────────────────────────
 
-export type AdminRole = "owner" | "manager" | "editor"
+export type AdminRole = "admin" | "owner" | "manager" | "editor"
 
 /** Firestore: /admins/{uid} */
 export interface AdminDoc {

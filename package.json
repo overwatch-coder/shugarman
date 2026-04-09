@@ -7,7 +7,10 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "seed:firestore": "npm --workspace web run seed:firestore",
+    "admin:create": "npm --workspace web run create:admin",
+    "admin:rotate-password": "npm --workspace web run rotate:admin-password"
   },
   "devDependencies": {
     "@workspace/eslint-config": "*",
