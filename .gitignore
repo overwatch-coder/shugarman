@@ -27,6 +27,10 @@ out/
 build
 dist
 
+# Firebase Admin SDK service account keys
+apps/web/*firebase-admin*.json
+apps/web/*adminsdk*.json
+
 
 # Debug
 npm-debug.log*
