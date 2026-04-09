@@ -1,13 +1,32 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Moon, Sun } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
-import { useAppTheme } from "@/components/theme-provider"
+
+const STORAGE_KEY = "shugarman-theme"
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const { theme, toggleTheme } = useAppTheme()
+  const [theme, setTheme] = useState<"dark" | "light">("dark")
   const isDark = theme === "dark"
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem(STORAGE_KEY)
+    const nextTheme = storedTheme === "light" ? "light" : "dark"
+
+    setTheme(nextTheme)
+    document.documentElement.classList.toggle("dark", nextTheme === "dark")
+    document.documentElement.style.colorScheme = nextTheme
+  }, [])
+
+  function toggleTheme() {
+    const nextTheme = isDark ? "light" : "dark"
+    setTheme(nextTheme)
+    document.documentElement.classList.toggle("dark", nextTheme === "dark")
+    document.documentElement.style.colorScheme = nextTheme
+    window.localStorage.setItem(STORAGE_KEY, nextTheme)
+  }
 
   return (
     <button

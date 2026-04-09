@@ -1,8 +1,19 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { CheckCircle2, ChevronLeft, CreditCard, MapPin, ShieldCheck, Truck } from "lucide-react"
+
+import { Button } from "@workspace/ui/components/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 
 import { useCart } from "./cart-provider"
 import { MotionPage, MotionSection } from "./motion-primitives"
@@ -34,9 +45,11 @@ export function CheckoutPageClient() {
     shippingAddress,
     shippingMethod,
     paymentMethod,
+    successModalOpen,
     setShippingAddress,
     setShippingMethod,
     setPaymentMethod,
+    setSuccessModalOpen,
     goNext,
     goBack,
     placeOrder,
@@ -281,6 +294,65 @@ export function CheckoutPageClient() {
 
   return (
     <MotionPage className="py-12">
+      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+        <DialogContent showCloseButton={false} className="max-w-[560px] overflow-hidden border-none bg-surface p-0 text-foreground ring-1 ring-white/10">
+          <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(232,25,44,0.18),transparent_65%)] p-8 sm:p-10">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+            <DialogHeader className="items-center text-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.82 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                className="relative mx-auto flex size-24 items-center justify-center rounded-full border border-primary/30 bg-primary/10"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0.45 }}
+                  animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.15, 0.35] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 rounded-full border border-primary/40"
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.14, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <CheckCircle2 className="size-11 text-primary" />
+                </motion.div>
+              </motion.div>
+              <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.28em] text-primary">Success confirmed</p>
+              <DialogTitle className="font-display text-5xl uppercase tracking-tight text-foreground">
+                Order Locked In
+              </DialogTitle>
+              <DialogDescription className="mx-auto max-w-md text-center text-sm leading-7 text-content-secondary">
+                Your device request has been staged successfully. A {storeMetadata.name} specialist will confirm payment and delivery details through WhatsApp or phone shortly.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className="bg-surface-high p-4 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-content-secondary">Customer</p>
+                <p className="mt-3 text-sm font-medium text-foreground">{shippingAddress.firstName} {shippingAddress.lastName}</p>
+                <p className="mt-1 text-sm text-content-secondary">{shippingAddress.phone}</p>
+              </div>
+              <div className="bg-surface-high p-4 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-content-secondary">Fulfillment</p>
+                <p className="mt-3 text-sm font-medium text-foreground">{shippingMethod?.label ?? "Pending confirmation"}</p>
+                <p className="mt-1 text-sm text-content-secondary">{paymentMethod?.type ?? "Pending confirmation"}</p>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-8 -mx-8 -mb-8 border-white/5 bg-surface-low px-8 py-6 sm:-mx-10 sm:-mb-10 sm:px-10">
+              <Button variant="outline" onClick={reset}>
+                Start New Checkout
+              </Button>
+              <Button asChild>
+                <Link href="/shop">Continue Shopping</Link>
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <MotionSection className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-primary">Secure checkout</p>

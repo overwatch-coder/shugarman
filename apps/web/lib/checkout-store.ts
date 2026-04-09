@@ -35,8 +35,10 @@ interface CheckoutState {
   shippingMethod: ShippingMethod | null
   paymentMethod: PaymentMethod | null
   orderPlaced: boolean
+  successModalOpen: boolean
 
   setStep: (step: CheckoutStep) => void
+  setSuccessModalOpen: (open: boolean) => void
   goNext: () => void
   goBack: () => void
   setShippingAddress: (address: ShippingAddress) => void
@@ -63,8 +65,10 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
   shippingMethod: null,
   paymentMethod: null,
   orderPlaced: false,
+  successModalOpen: false,
 
   setStep: (step) => set({ step }),
+  setSuccessModalOpen: (open) => set({ successModalOpen: open }),
 
   goNext: () =>
     set((state) => {
@@ -84,7 +88,7 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
   setShippingMethod: (method) => set({ shippingMethod: method }),
   setPaymentMethod: (method) => set({ paymentMethod: method }),
 
-  placeOrder: () => set({ orderPlaced: true, step: "confirmation" }),
+  placeOrder: () => set({ orderPlaced: true, step: "confirmation", successModalOpen: true }),
 
   reset: () =>
     set({
@@ -93,6 +97,7 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
       shippingMethod: null,
       paymentMethod: null,
       orderPlaced: false,
+      successModalOpen: false,
     }),
 }))
 
