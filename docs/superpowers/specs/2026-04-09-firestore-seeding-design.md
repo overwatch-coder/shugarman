@@ -2,60 +2,71 @@
 
 ## Goal
 
-Create a repeatable Firestore provisioning and seeding workflow for Sugar Man iStore that can be run any time a Firebase project is changed or a new database needs baseline data. The workflow must upsert, not reset, and must use brand-owned template files for store/settings/content while using the current storefront mock catalog as the product source.
+Create a repeatable Firestore seeding workflow for Sugar Man iStore that can be run any time a Firebase project is changed or a Firestore database needs baseline data. The workflow must upsert, not reset, and must use the current storefront mock catalog as the sole data source.
 
 ## Scope
 
 This design covers:
 
-- A rerunnable local script for Firestore setup and seed upserts.
-- Upserting products, store settings, and storefront home content.
-- Leaving orders empty.
+- A rerunnable local script for Firestore seed upserts against an already provisioned Firebase project.
+- Upserting the product catalog: `products/{slug}` documents and `categories/{slug}` documents.
+- Leaving orders empty (created by real checkout submissions only).
 - Leaving admin-user creation out of v1.
 - Reusing existing Firebase Admin credentials and TypeScript schema types.
 
 This design does not cover:
 
+- Store settings (`settings/store`) — treated as static brand configuration done once outside the seed script.
+- Homepage/storefront content (`content/home`) — treated as static brand content done once outside the seed script.
+- Template file parsing — no external template files are required.
 - Firestore security rules.
 - Admin user provisioning.
 - Destructive reset of collections.
 - Media upload/import workflows.
-- Migrating all storefront mock helpers to Firestore-backed storage in the same change.
 
 ## Source Of Truth
 
 ### Products
 
-Use the current storefront mock catalog and product detail data in the web app as the seed source for Firestore `products/{slug}` documents.
+Use the current storefront mock catalog and product detail data in the web app as the sole seed source for Firestore `products/{slug}` documents.
+
+- Source file: `apps/web/lib/storefront-data.ts`
+- Product card array: `products: ProductCard[]` — 6 product card records
+- Product detail map: `productDetails: Record<string, ProductDetail>` — currently 1 full detail record (`iphone-15`)
 
 Reasoning:
 
 - The app already depends on these product structures.
-- The brand template files do not contain a full catalog.
 - This minimizes transformation risk and gives immediate parity with the current storefront.
+- No external template files are required or parsed.
 
-### Store Settings And Brand Content
+### Categories
 
-Use brand-owned content from the repository templates as the primary source for store identity and storefront content, especially:
+Seed a `categories` collection using the canonical category slugs used by the shop filter UI.
 
-- `templates/Shugarman iStore Listing.md`
-- `templates/sugar_man_istore_detailed_prd.html`
-- `templates/sugar_man_kinetic/DESIGN.md`
+Categories to seed in v1 (matching `shop-page-client.tsx` hardcoded filter array):
 
-These sources provide business identity, contact details, services, hours, tone, and homepage/content direction.
+| slug | name |
+|---|---|
+| smartphones | Smartphones |
+| tablets | Tablets |
+| laptops | Laptops |
+| wearables | Wearables |
+
+These four are seeded as `categories/{slug}` documents with deterministic ordering (`order: 1` through `order: 4`).
 
 ### Orders
 
-Do not seed orders in v1. The `orders` collection should be created naturally by real checkout submissions.
+Do not seed orders in v1. The `orders` collection is created naturally by real checkout submissions.
 
 ## Recommended Approach
 
-Implement a Node/TypeScript seed script inside the web app workspace that runs with the existing Firebase Admin configuration and writes directly to Firestore.
+Implement a Node/TypeScript seed script inside the web app workspace that uses a dedicated seed-only Firebase Admin initializer and writes directly to Firestore.
 
 This is preferred over Firebase CLI import/export or an admin-only runtime endpoint because:
 
 - it is easier to keep typed and deterministic,
-- it can transform multiple source formats into one Firestore shape,
+- it transforms one source format (mock catalog) into a predictable Firestore shape,
 - it is safe to rerun with upsert semantics,
 - it fits the current monorepo and environment model.
 
@@ -64,21 +75,41 @@ This is preferred over Firebase CLI import/export or an admin-only runtime endpo
 The script will upsert the following Firestore targets:
 
 - `products/{slug}` using `ProductDoc`
-- `settings/store` using `StoreSettingsDoc`
-- `content/home` using `HomeContentDoc`
+- `categories/{slug}` using `CategoryDoc` (a new minimal type added to `schemas.ts`)
 
 Collections/documents outside those targets are left untouched.
+
+### CategoryDoc
+
+Add a `CategoryDoc` type to `apps/web/lib/schemas.ts`:
+
+```ts
+export interface CategoryDoc {
+  slug: string;
+  name: string;
+  order: number;
+}
+```
+
+Firestore path: `categories/{slug}`
 
 ## Idempotency Model
 
 The workflow must be rerunnable and non-destructive.
+
+Seed ownership contract:
+
+- The source-of-truth seed manifest for products is the current set of mock product slugs from `storefront-data.ts`.
+- The source-of-truth seed manifest for categories is the four canonical slugs defined in this spec.
+- Documents in those manifests are considered seed-owned.
+- Documents outside those manifests are not seed-owned and must be left untouched.
 
 Behavior:
 
 - If a seeded document already exists, overwrite only the known seeded document with the newly generated payload.
 - If a seeded document does not exist, create it.
 - Do not enumerate and delete other documents in the same collection.
-- Do not touch `orders` or `admins`.
+- Do not touch `orders`, `admins`, `settings`, or `content`.
 
 This ensures the script can be used on a fresh project and on an existing project without erasing unrelated data.
 
@@ -87,133 +118,165 @@ This ensures the script can be used on a fresh project and on an existing projec
 The seed entrypoint should:
 
 1. Validate required Firebase Admin environment variables.
-2. Load source data from templates and storefront mock modules.
+2. Load source data from storefront mock modules.
 3. Normalize source data into Firestore schema shapes.
 4. Upsert documents with stable IDs and predictable paths.
 5. Print a summary of what was written.
 6. Support a dry-run mode for inspection without writes.
+
+Authentication contract for v1:
+
+- The seeding script requires the split Firebase Admin service-account env vars.
+- The script must not rely on the app runtime fallback path in `firebase-admin.ts`.
+- ADC is out of scope for v1.
+- The script must log the resolved Firebase project ID and auth mode before any write attempt.
+- The implementation uses a dedicated seed-only initializer that hard-fails when required split service-account env vars are missing.
 
 ## Proposed File Structure
 
 The implementation should introduce focused files rather than one large script.
 
 - `apps/web/scripts/seed-firestore.ts`
-  Main CLI entrypoint.
+  Main CLI entrypoint. Orchestrates validation, loading, mapping, writing, and reporting.
+
+- `apps/web/scripts/lib/seed/firebase-admin-seed.ts`
+  Dedicated admin initializer for the seed script. Unlike the app runtime initializer, this file requires split service-account env vars and never falls back to public project configuration.
 
 - `apps/web/scripts/lib/seed/options.ts`
   Parse CLI flags such as `--dry-run`.
 
-- `apps/web/scripts/lib/seed/sources.ts`
-  Load brand template data and current storefront mock sources.
-
 - `apps/web/scripts/lib/seed/mappers.ts`
-  Convert raw source data into `ProductDoc`, `StoreSettingsDoc`, and `HomeContentDoc` payloads.
+  Convert raw source data into `ProductDoc` and `CategoryDoc` payloads.
 
 - `apps/web/scripts/lib/seed/write.ts`
-  Encapsulate Firestore upsert behavior and batched writes.
+  Encapsulate Firestore upsert behavior (read-then-set for `createdAt` preservation).
 
 - `apps/web/scripts/lib/seed/report.ts`
   Print dry-run and write summaries.
 
-If existing repo conventions favor fewer files, this can be compressed slightly, but the boundaries should remain the same.
+- `apps/web/lib/schemas.ts`
+  Add `CategoryDoc` type (minimal addition to existing file).
+
+Path resolution contract for v1:
+
+- The canonical command owner is `apps/web/package.json`.
+- The canonical invocation from the monorepo root is `npm --workspace web run seed:firestore`.
+- The first implementation adds `tsx` as a dev dependency so the command runs directly in TypeScript without a build step.
 
 ## Seed Content Mapping
 
 ### Products
 
-For each mock product/product detail pair:
+For each mock product card in `storefront-data.ts`, create one `ProductDoc` using the product slug as the Firestore document ID.
 
-- Use product slug as Firestore document ID.
-- Populate storefront-facing fields already used by the DAL.
-- Preserve images, rating, review count, specs, installment info, color options, and related product links where available.
-- Fill timestamps deterministically at seed time.
+If a matching detailed record exists in `productDetails`, use it as the primary source for detail-heavy fields.
 
-### Store Settings
+If a matching detailed record does not exist, apply the following deterministic defaults so the full catalog remains seedable in v1:
 
-Map brand identity and business listing data into `settings/store`:
+- `rating`: `0`
+- `reviewCount`: `0`
+- `colors`: `[]`
+- `storageOptions`: `[]`
+- `inStock`: `true`
+- `images`: one-element array derived from the card image and alt text
+- `specs`: `[]`
+- `installment`: `null`
+- `relatedSlugs`: `[]`
+- `featured`: `false`
+- `badge`: keep card badge if present
+- `category`: infer from subtitle — headphone/audio products map to `wearables`; all others default to `smartphones`
+- `createdAt`: preserve existing Firestore `createdAt` on reruns when the document exists; otherwise set on first seed
+- `updatedAt`: set to the current seed-run timestamp on every successful upsert
 
-- name
-- tagline
-- description
-- phone
-- whatsapp
-- email
-- address
-- city
-- region
-- country
-- hours
-- social
+Additional deterministic mapping rules:
 
-Template data wins where present. Existing placeholder/mock values should only be used as fallback when the templates do not provide a value.
+- `relatedSlugs`: when a detail record exists, map `relatedProducts` to their slugs in source order; if missing, use `[]`
+- `featured`: `true` only for products in `products.slice(0, 4)`, otherwise `false`
+- `subtitle`, `image`, and `imageAlt` always come from the card source even when a detail record exists
 
-### Home Content
+Ownership rule for products:
 
-Map template-guided content into `content/home`:
+- The script uses full-document replacement (`set` without merge) for each seed-owned document.
+- Manual edits to a seeded product document are intentionally replaced on rerun.
+- Unknown product documents not created by the seed script remain untouched.
 
-- hero messaging from the PRD
-- category tiles based on the storefront architecture and current home sections
-- trust points based on the PRD/business listing selling points and store promises
+### Categories
 
-The first version should prioritize a valid, typed `HomeContentDoc` that aligns with the current UI and DAL expectations, not a perfect CMS model.
+For each canonical category entry, create one `CategoryDoc` using the slug as the Firestore document ID.
+
+| order | slug | name |
+|---|---|---|
+| 1 | smartphones | Smartphones |
+| 2 | tablets | Tablets |
+| 3 | laptops | Laptops |
+| 4 | wearables | Wearables |
+
+Upsert rule: full replacement on every run. `CategoryDoc` has no time-based fields.
 
 ## Operational UX
 
-Add an npm script that can be run anytime, for example:
+Commands:
 
-- `npm run seed:firestore`
+- `npm run seed:firestore` — real write run
+- `npm run seed:firestore -- --dry-run` — inspection run with no writes
 
-Optional flags:
-
-- `npm run seed:firestore -- --dry-run`
-
-The script should log:
+The script must log:
 
 - target Firebase project ID,
+- resolved auth mode (`service-account-env`),
 - dry-run vs write mode,
 - number of products prepared,
-- whether settings/store will be written,
-- whether content/home will be written,
+- number of categories prepared,
 - final success/failure summary.
+
+The script must print the complete touched-path summary:
+
+- a sorted list of `{ path, operation }` entries where `operation` is one of `create` or `replace`.
+
+Runtime command contract for v1:
+
+- `apps/web/package.json` exposes `seed:firestore` backed by `tsx scripts/seed-firestore.ts`
+- supported flags in v1: `--dry-run`
+- the command must work from a clean checkout when run as `npm --workspace web run seed:firestore`
 
 ## Error Handling
 
 The script must fail fast when:
 
 - required Firebase Admin env vars are missing,
-- template parsing fails,
-- required product fields such as slug or name are invalid,
+- required product fields such as slug or name are invalid or missing from the mock source,
 - Firestore write operations return an error.
 
 The script must not silently swallow write failures.
 
-For dry-run mode, validation should still be strict so invalid seed data is caught before any real execution.
+For dry-run mode, validation must still be strict so invalid seed data is caught before any real execution.
 
-## Testing Strategy
+Exact product upsert algorithm for v1:
 
-Implementation should follow TDD where practical for pure transformations.
+1. Compute the seed-owned product slug set from the current mock `products` array.
+2. For each slug, read the existing Firestore doc at `products/{slug}`.
+3. If the doc exists and `createdAt` is a valid ISO string, preserve it.
+4. Otherwise, set `createdAt` to the current seed-run timestamp string.
+5. Always set `updatedAt` to the current seed-run timestamp string.
+6. Build the full `ProductDoc` payload.
+7. Write with full replacement (`set` without merge).
 
-Priority coverage:
+Category upsert algorithm for v1:
 
-- mapper tests for template-to-settings conversion,
-- mapper tests for mock catalog to `ProductDoc`,
-- validation tests for missing required env vars,
-- dry-run tests that confirm no writes are attempted,
-- narrow integration verification by running the script against the configured Firebase project.
-
-Because the repo does not currently expose an established test harness for scripts, the first implementation may use targeted script-level assertions and focused TypeScript validation, but transformation logic should still be kept pure enough to test directly.
+- Write each `CategoryDoc` with full replacement on every successful real run.
 
 ## Verification Requirements
 
 Before considering implementation complete, verify:
 
 - TypeScript passes for the app workspace.
-- Dry run succeeds and prints the expected summary.
+- Dry run succeeds and prints the expected summary without errors.
 - Real seed run succeeds against the configured Firebase project.
-- A read-back check confirms at least:
-  - `settings/store` exists,
-  - `content/home` exists,
-  - one seeded product exists under `products/{slug}`.
+- A second real seed run succeeds without deletes or count drift.
+- A read-back check confirms:
+  - all 6 seeded product slugs exist under `products/{slug}`,
+  - all 4 seeded category slugs exist under `categories/{slug}`.
+- The touched-path summary for seeded paths is identical between the first and second run (same paths, `replace` operations after first run).
 
 ## Future Extensions
 
@@ -221,16 +284,18 @@ This design should leave room for:
 
 - seeding brands as a separate collection,
 - optional admin seeding by UID,
-- additional storefront content sections,
 - Firestore rules deployment and validation,
 - image migration/storage upload workflows,
-- partial seed scopes such as `--only=products`.
+- partial seed scopes such as `--only=products`,
+- making shop-page-client.tsx data-driven from `categories` collection.
 
 ## Final Decision Summary
 
-- Seed source for products: existing storefront mock catalog.
-- Seed source for settings/content: brand template files.
+- Seed source for products: existing storefront mock catalog only.
+- Seed source for categories: four canonical slugs defined in this spec.
+- Store settings and homepage content: static, out of scope for seed script.
 - Orders: do not seed.
 - Admin users: do not seed in v1.
 - Rerun behavior: idempotent upsert only, no destructive reset.
 - Delivery model: local TypeScript seed script in the web workspace.
+- Auth mode: split Firebase Admin service-account env vars only in v1.
