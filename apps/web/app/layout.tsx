@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import "@workspace/ui/globals.css"
 import "./storefront.css"
 import { CartProvider } from "@/components/storefront/cart-provider"
+import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -54,7 +55,9 @@ export default function RootLayout({
     >
       <body className="sf-bg-gradient font-body text-foreground">
         <ThemeProvider>
-          <CartProvider>{children}</CartProvider>
+          <QueryProvider>
+            <CartProvider>{children}</CartProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

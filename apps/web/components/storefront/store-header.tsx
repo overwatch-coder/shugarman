@@ -70,7 +70,7 @@ export function StoreHeader() {
           >
             <ShoppingCart className="size-4" />
             <AnimatePresence initial={false}>
-              {totalItems > 0 ? (
+              {totalItems > 0 && (
                 <motion.span
                   key="cart-badge"
                   initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.7 }}
@@ -81,15 +81,6 @@ export function StoreHeader() {
                 >
                   <AnimatedCounter value={totalItems} formatter={(value) => String(value)} />
                 </motion.span>
-              ) : (
-                <motion.span
-                  key="cart-dot"
-                  initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.7 }}
-                  animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
-                  exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.7 }}
-                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary"
-                />
               )}
             </AnimatePresence>
           </Link>

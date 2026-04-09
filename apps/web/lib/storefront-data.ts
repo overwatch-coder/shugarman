@@ -35,9 +35,19 @@ export const storeMetadata: StoreMetadata = {
   ],
   social: [
     {
+      platform: "Facebook",
+      handle: "Shugarman",
+      url: "https://facebook.com/Shugarman",
+    },
+    {
       platform: "Instagram",
       handle: "@Shugarman_istore",
       url: "https://instagram.com/Shugarman_istore",
+    },
+    {
+      platform: "TikTok",
+      handle: "@Shugarman_istore",
+      url: "https://tiktok.com/@Shugarman_istore",
     },
     {
       platform: "WhatsApp",

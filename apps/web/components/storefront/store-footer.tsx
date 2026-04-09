@@ -1,7 +1,15 @@
 import Link from "next/link"
-import { Camera, Globe, MessageCircle } from "lucide-react"
+import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
+import type { IconType } from "react-icons"
 
 import { footerColumns, storeMetadata } from "@/lib/storefront-data"
+
+const socialIconMap: Record<string, IconType> = {
+  Facebook: FaFacebookF,
+  Instagram: FaInstagram,
+  TikTok: FaTiktok,
+  WhatsApp: FaWhatsapp,
+}
 
 /**
  * Groups consecutive days that share the same open/close times into
@@ -38,24 +46,22 @@ export function StoreFooter() {
             {storeMetadata.description}
           </p>
           <div className="mt-6 flex gap-4">
-            <Link
-              href={storeMetadata.social[1]?.url ?? "#"}
-              className="inline-flex size-10 items-center justify-center rounded-full bg-white/8 text-white/70 transition-colors hover:text-primary"
-            >
-              <MessageCircle className="size-4" />
-            </Link>
-            <Link
-              href={storeMetadata.social[0]?.url ?? "#"}
-              className="inline-flex size-10 items-center justify-center rounded-full bg-white/8 text-white/70 transition-colors hover:text-primary"
-            >
-              <Camera className="size-4" />
-            </Link>
-            <Link
-              href="#contact"
-              className="inline-flex size-10 items-center justify-center rounded-full bg-white/8 text-white/70 transition-colors hover:text-primary"
-            >
-              <Globe className="size-4" />
-            </Link>
+            {storeMetadata.social.map((social) => {
+              const Icon = socialIconMap[social.platform]
+              if (!Icon) return null
+              return (
+                <Link
+                  key={social.platform}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.platform}
+                  className="inline-flex size-10 items-center justify-center rounded-full bg-white/8 text-white/70 transition-colors hover:text-primary"
+                >
+                  <Icon className="size-4" />
+                </Link>
+              )
+            })}
           </div>
         </div>
 
