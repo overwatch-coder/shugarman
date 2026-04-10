@@ -13,9 +13,10 @@ import {
   Check,
 } from "lucide-react"
 import Link from "next/link"
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
 import { toast } from "sonner"
 import { AdminPageTitle } from "@/components/admin/admin-shell"
+import { importAdminImageFromUrl } from "@/lib/actions/media"
+import { uploadAdminImage } from "@/lib/admin-upload-client"
 import type {
   ProductDoc,
   ProductCondition,
@@ -26,7 +27,6 @@ import type {
   InstallmentPlan,
 } from "@/lib/schemas"
 import { saveProduct } from "@/lib/actions/products"
-import { getFirebaseStorage } from "@/lib/firebase"
 import {
   buildRelatedProductOptions,
   getNextCreateSlugState,
@@ -156,7 +156,6 @@ function ImageGalleryEditor({
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
-    const storage = getFirebaseStorage()
 
     const selectedFiles = Array.from(files)
     const placeholders = selectedFiles.map((file) => ({
@@ -180,43 +179,27 @@ function ImageGalleryEditor({
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
     for (const placeholder of placeholders) {
-      const storageRef = ref(storage, `products/${placeholder.storageId}-${placeholder.file.name}`)
-      const task = uploadBytesResumable(storageRef, placeholder.file)
-
-      task.on(
-        "state_changed",
-        (snap) => {
-          const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100)
-          setEntries((prev) =>
-            prev.map((entry) =>
-              entry.previewSrc === placeholder.previewSrc ? { ...entry, progress: pct } : entry
-            )
+      try {
+        const url = await uploadAdminImage(placeholder.file, "products")
+        setEntries((prev) => {
+          URL.revokeObjectURL(placeholder.previewSrc)
+          const next = prev.map((entry) =>
+            entry.previewSrc === placeholder.previewSrc
+              ? { src: url, alt: entry.alt, uploading: false, progress: 100 }
+              : entry
           )
-        },
-        () => {
-          // Upload failed — remove placeholder
-          setEntries((prev) => {
-            URL.revokeObjectURL(placeholder.previewSrc)
-            const next = prev.filter((entry) => entry.previewSrc !== placeholder.previewSrc)
-            onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
-            return next
-          })
-          toast.error(`Failed to upload ${placeholder.file.name}.`)
-        },
-        async () => {
-          const url = await getDownloadURL(task.snapshot.ref)
-          setEntries((prev) => {
-            URL.revokeObjectURL(placeholder.previewSrc)
-            const next = prev.map((entry) =>
-              entry.previewSrc === placeholder.previewSrc
-                ? { src: url, alt: entry.alt, uploading: false }
-                : entry
-            )
-            onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
-            return next
-          })
-        }
-      )
+          onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
+          return next
+        })
+      } catch (err) {
+        setEntries((prev) => {
+          URL.revokeObjectURL(placeholder.previewSrc)
+          const next = prev.filter((entry) => entry.previewSrc !== placeholder.previewSrc)
+          onChange(next.filter((e) => !e.uploading).map((e) => ({ src: e.src, alt: e.alt })))
+          return next
+        })
+        toast.error(err instanceof Error ? err.message : `Failed to upload ${placeholder.file.name}.`)
+      }
     }
 
     if (fileRef.current) {
@@ -238,9 +221,17 @@ function ImageGalleryEditor({
     syncUp(next)
   }
 
-  function addUrl(url: string) {
-    if (!url.trim()) return
-    const next = [...entries, { src: url, alt: "" }]
+  async function addUrl(url: string) {
+    const trimmedUrl = url.trim()
+    if (!trimmedUrl) return
+
+    const result = await importAdminImageFromUrl(trimmedUrl, "products")
+    if (!result.success || !result.url) {
+      toast.error(result.error ?? "Failed to import image URL.")
+      return
+    }
+
+    const next = [...entries, { src: result.url, alt: "" }]
     syncUp(next)
   }
 
@@ -315,17 +306,24 @@ function ImageGalleryEditor({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
-              addUrl(urlInput)
-              setUrlInput("")
+              void (async () => {
+                await addUrl(urlInput)
+                setUrlInput("")
+              })()
             }
           }}
         />
         <button
           type="button"
-          onClick={() => { addUrl(urlInput); setUrlInput("") }}
+          onClick={() => {
+            void (async () => {
+              await addUrl(urlInput)
+              setUrlInput("")
+            })()
+          }}
           className="rounded-lg border border-border px-3 py-2 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
         >
-          Add URL
+          Import URL
         </button>
       </div>
 
@@ -348,7 +346,7 @@ function ImageGalleryEditor({
       />
 
       <p className="text-[11px] text-content-muted">
-        First image is the primary gallery image. Upload or paste multiple images, then promote any uploaded image to the first slot.
+        First image is the primary gallery image. Upload from device or import by URL, then promote any uploaded image to the first slot.
       </p>
     </div>
   )

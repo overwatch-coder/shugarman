@@ -2,11 +2,11 @@
 
 import { useRef, useState, useTransition } from "react"
 import { Check, ImagePlus, Loader2, Save, Upload } from "lucide-react"
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
 import { toast } from "sonner"
 
-import { getFirebaseStorage } from "@/lib/firebase"
-import { importHomeCategoryImageFromUrl, saveHomeContent } from "@/lib/actions/home-content"
+import { saveHomeContent } from "@/lib/actions/home-content"
+import { importAdminImageFromUrl } from "@/lib/actions/media"
+import { uploadAdminImage } from "@/lib/admin-upload-client"
 import type { BentoCategoryDoc, HomeCategoriesHeadingDoc } from "@/lib/schemas"
 import type { BentoCategory } from "@/lib/storefront-types"
 
@@ -52,34 +52,17 @@ export function HomeContentClient({
     if (!file) return
 
     try {
-      const storage = getFirebaseStorage()
-      const storageRef = ref(storage, `storefront/home-categories/${Date.now()}-${file.name}`)
-      const task = uploadBytesResumable(storageRef, file)
-
       setUploadProgress((prev) => ({ ...prev, [index]: 0 }))
-
-      task.on(
-        "state_changed",
-        (snap) => {
-          setUploadProgress((prev) => ({
-            ...prev,
-            [index]: Math.round((snap.bytesTransferred / snap.totalBytes) * 100),
-          }))
-        },
-        () => {
-          setUploadProgress((prev) => ({ ...prev, [index]: null }))
-          toast.error("Failed to upload category image.")
-        },
-        async () => {
-          const url = await getDownloadURL(task.snapshot.ref)
-          setUploadProgress((prev) => ({ ...prev, [index]: null }))
-          updateCategory(index, "image", url)
-          if (!categories[index]?.imageAlt?.trim()) {
-            updateCategory(index, "imageAlt", file.name.replace(/\.[^.]+$/, ""))
-          }
-          toast.success("Category image uploaded.")
-        }
-      )
+      const url = await uploadAdminImage(file, "storefront/home-categories")
+      setUploadProgress((prev) => ({ ...prev, [index]: null }))
+      updateCategory(index, "image", url)
+      if (!categories[index]?.imageAlt?.trim()) {
+        updateCategory(index, "imageAlt", file.name.replace(/\.[^.]+$/, ""))
+      }
+      toast.success("Category image uploaded.")
+    } catch (err) {
+      setUploadProgress((prev) => ({ ...prev, [index]: null }))
+      toast.error(err instanceof Error ? err.message : "Failed to upload category image.")
     } finally {
       const fileRef = fileRefs.current[index]
       if (fileRef) fileRef.value = ""
@@ -92,7 +75,7 @@ export function HomeContentClient({
 
     setImportingIndex(index)
     startTransition(async () => {
-      const result = await importHomeCategoryImageFromUrl(imageUrl)
+      const result = await importAdminImageFromUrl(imageUrl, "storefront/home-categories")
       setImportingIndex(null)
 
       if (!result.success || !result.url) {
@@ -136,7 +119,7 @@ export function HomeContentClient({
       setCategories((prev) =>
         prev.map((category, index) => ({
           ...category,
-          ...payload.categories[index],
+          ...payload.categories[index]!,
         }))
       )
       toast.success("Home content saved.")

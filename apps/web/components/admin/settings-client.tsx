@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation"
 import { Save, Check, Plus, Trash2, Loader2, Upload, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 import type { StoreSettingsDoc, SocialLink } from "@/lib/schemas"
-import { importStoreHeroImageFromUrl, saveStoreSettings } from "@/lib/actions/settings"
+import { saveStoreSettings } from "@/lib/actions/settings"
+import { importAdminImageFromUrl } from "@/lib/actions/media"
+import { uploadAdminImage } from "@/lib/admin-upload-client"
 import { buildSocialUrl, normalizeSocialLink } from "@/lib/admin/settings-helpers"
 import { BRAND_NAME } from "@/lib/brand"
-import { getFirebaseStorage } from "@/lib/firebase"
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
 
 const SOCIAL_PLATFORMS = [
   "Facebook",
@@ -127,33 +127,19 @@ export function SettingsClient({
     if (!file) return
 
     try {
-      const storage = getFirebaseStorage()
-      const storageRef = ref(storage, `storefront/hero/${Date.now()}-${file.name}`)
-      const task = uploadBytesResumable(storageRef, file)
-
       setHeroUploadProgress(0)
-
-      task.on(
-        "state_changed",
-        (snap) => {
-          setHeroUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100))
-        },
-        () => {
-          setHeroUploadProgress(null)
-          toast.error("Failed to upload hero image.")
-        },
-        async () => {
-          const url = await getDownloadURL(task.snapshot.ref)
-          setHeroUploadProgress(null)
-          setForm((prev) => ({
-            ...prev,
-            heroImage: url,
-            heroImageAlt: prev.heroImageAlt || file.name.replace(/\.[^.]+$/, ""),
-          }))
-          setSaved(false)
-          toast.success("Hero image uploaded.")
-        }
-      )
+      const url = await uploadAdminImage(file, "storefront/hero")
+      setHeroUploadProgress(null)
+      setForm((prev) => ({
+        ...prev,
+        heroImage: url,
+        heroImageAlt: prev.heroImageAlt || file.name.replace(/\.[^.]+$/, ""),
+      }))
+      setSaved(false)
+      toast.success("Hero image uploaded.")
+    } catch (err) {
+      setHeroUploadProgress(null)
+      toast.error(err instanceof Error ? err.message : "Failed to upload hero image.")
     } finally {
       if (heroFileRef.current) {
         heroFileRef.current.value = ""
@@ -163,7 +149,7 @@ export function SettingsClient({
 
   function handleHeroUrlImport() {
     startHeroUrlImport(async () => {
-      const result = await importStoreHeroImageFromUrl(heroUrlInput)
+      const result = await importAdminImageFromUrl(heroUrlInput, "storefront/hero")
 
       if (!result.success || !result.url) {
         toast.error(result.error ?? "Failed to import hero image.")

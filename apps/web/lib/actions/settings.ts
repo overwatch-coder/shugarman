@@ -1,16 +1,11 @@
 "use server"
 
-import { randomUUID } from "node:crypto"
-
 import { adminDb } from "@/lib/firebase-admin"
-import { adminStorage } from "@/lib/firebase-admin"
+import { importImageUrlToStorage } from "@/lib/media-storage"
 import type { StoreSettingsDoc } from "@/lib/schemas"
+import { getSession } from "@/lib/admin-auth"
 
 const DOC_PATH = "settings/store"
-
-function buildFirebaseDownloadUrl(bucketName: string, objectPath: string, token: string) {
-  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`
-}
 
 export async function getStoreSettings(): Promise<StoreSettingsDoc | null> {
   try {
@@ -39,46 +34,23 @@ export async function importStoreHeroImageFromUrl(imageUrl: string): Promise<{
   url?: string
   error?: string
 }> {
+  const session = await getSession()
+  if (!session) {
+    return { success: false, error: "Unauthorized" }
+  }
+
   try {
-    const trimmedUrl = imageUrl.trim()
-    if (!trimmedUrl) {
-      return { success: false, error: "Image URL is required" }
-    }
-
-    const response = await fetch(trimmedUrl)
-    if (!response.ok) {
-      return { success: false, error: "Could not download image from the provided URL" }
-    }
-
-    const contentType = response.headers.get("content-type") ?? ""
-    if (!contentType.startsWith("image/")) {
-      return { success: false, error: "The provided URL does not point to a valid image" }
-    }
-
-    const extension = contentType.split("/")[1]?.split(";")[0]?.trim() || "jpg"
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const objectPath = `storefront/hero/${Date.now()}-${randomUUID()}.${extension}`
-    const token = randomUUID()
-    const bucket = adminStorage.bucket()
-
-    await bucket.file(objectPath).save(buffer, {
-      metadata: {
-        contentType,
-        metadata: {
-          firebaseStorageDownloadTokens: token,
-          sourceUrl: trimmedUrl,
-        },
-      },
-      resumable: false,
-    })
+    const upload = await importImageUrlToStorage(imageUrl, "storefront/hero")
 
     return {
       success: true,
-      url: buildFirebaseDownloadUrl(bucket.name, objectPath, token),
+      url: upload.url,
     }
   } catch (err) {
     console.error("importStoreHeroImageFromUrl:", err)
-    return { success: false, error: "Failed to import the image into Firebase storage" }
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to import the image into Firebase storage",
+    }
   }
 }
