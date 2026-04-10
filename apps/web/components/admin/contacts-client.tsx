@@ -19,6 +19,7 @@ import {
   recordMailtoReply,
   sendContactReply,
 } from "@/lib/actions/contacts"
+import { buildContactThread } from "@/lib/contact-thread"
 
 function formatRelativeDate(iso: string) {
   const date = new Date(iso)
@@ -56,6 +57,7 @@ export function ContactsClient({
   const [isPending, startTransition] = useTransition()
 
   const selectedContact = messages.find((message) => message.id === selectedContactId) ?? null
+  const thread = selectedContact ? buildContactThread(selectedContact) : []
   const filteredMessages = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
     if (!normalizedSearch) return messages
@@ -217,9 +219,23 @@ export function ContactsClient({
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-content-secondary">Customer Message</p>
-                  <div className="mt-2 rounded-xl border border-border bg-surface p-4 text-sm leading-7 text-foreground whitespace-pre-wrap">
-                    {selectedContact.message}
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-content-secondary">Conversation</p>
+                  <div className="mt-3 space-y-3">
+                    {thread.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className={entry.direction === "inbound" ? "rounded-xl border border-border bg-surface p-4" : "rounded-xl border border-primary/20 bg-primary/5 p-4"}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-sm font-bold text-foreground">{entry.title}</p>
+                          <p className="text-[11px] text-content-secondary">
+                            {entry.channel} · {formatRelativeDate(entry.timestamp)}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-xs text-content-muted">{entry.byline}</p>
+                        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-content-secondary">{entry.body}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -244,27 +260,6 @@ export function ContactsClient({
                     />
                   </div>
                 </div>
-
-                {selectedContact.replies.length > 0 && (
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-content-secondary">Reply History</p>
-                    <div className="mt-3 space-y-3">
-                      {selectedContact.replies.map((reply) => (
-                        <div key={reply.id} className="rounded-xl border border-border bg-surface p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-sm font-bold text-foreground">{reply.subject}</p>
-                            <p className="text-[11px] text-content-secondary">
-                              {reply.channel} · {formatRelativeDate(reply.sentAt)}
-                            </p>
-                          </div>
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-content-secondary">
-                            {reply.message}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               <DialogFooter className="border-t border-border bg-card px-6 py-4 sm:justify-between">

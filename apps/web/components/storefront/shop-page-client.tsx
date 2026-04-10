@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useCallback, useState } from "react"
-import { useSearchParams, useRouter, usePathname } from "next/navigation"
+import { useCallback, useMemo, useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react"
 
 import {
@@ -12,25 +12,26 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 
+import { matchesStorefrontQuery } from "@/lib/storefront-search"
 import type {
   ProductCard as ProductCardData,
   ProductCondition,
-    SortOption,
-  } from "@/lib/storefront-types"
+  SortOption,
+} from "@/lib/storefront-types"
 
-  import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
-  import { ProductCard } from "./product-card"
+import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
+import { ProductCard } from "./product-card"
 
-  const categories = ["Smartphones", "Tablets", "Laptops", "Wearables"] as const
-  const brands = ["Apple", "Samsung"] as const
-  const swatches = [
-    { hex: "#171717", label: "Black" },
-    { hex: "#A3A3A3", label: "Silver" },
-    { hex: "#1D4ED8", label: "Blue" },
-    { hex: "#991B1B", label: "Red" },
-  ]
+const categories = ["Smartphones", "Tablets", "Laptops", "Wearables"] as const
+const brands = ["Apple", "Samsung"] as const
+const swatches = [
+  { hex: "#171717", label: "Black" },
+  { hex: "#A3A3A3", label: "Silver" },
+  { hex: "#1D4ED8", label: "Blue" },
+  { hex: "#991B1B", label: "Red" },
+]
 
-  const ITEMS_PER_PAGE = 16
+const ITEMS_PER_PAGE = 16
 
   function parseSearchParams(searchParams: URLSearchParams) {
     const selectedCategories = searchParams.getAll("category")
@@ -40,6 +41,7 @@ import type {
     const maxPrice = searchParams.get("maxPrice")
     const sort = (searchParams.get("sort") ?? "featured") as SortOption
     const page = Math.max(1, Number(searchParams.get("page") ?? "1"))
+    const query = searchParams.get("q") ?? ""
 
     return {
       selectedCategories,
@@ -49,6 +51,7 @@ import type {
       priceRange: [0, maxPrice ? Number(maxPrice) : 15000] as [number, number],
       sort,
       currentPage: page,
+      query,
     }
   }
 
@@ -66,6 +69,7 @@ import type {
       priceRange,
       sort,
       currentPage,
+      query,
     } = parseSearchParams(searchParams)
 
     const updateParams = useCallback(
@@ -88,8 +92,8 @@ import type {
           params.delete("page")
         }
 
-        const query = params.toString()
-        router.push(query ? `${pathname}?${query}` : pathname, { scroll: false })
+        const nextQuery = params.toString()
+        router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false })
       },
       [pathname, router, searchParams]
     )
@@ -114,11 +118,12 @@ import type {
 
     const filteredProducts = useMemo(() => {
       const nextProducts = products.filter((product) => {
+        const searchMatch = !query.trim() || matchesStorefrontQuery(product, query)
         const brandMatch = !selectedBrand || product.brand === selectedBrand
         const conditionMatch = !selectedCondition || product.condition === selectedCondition
         const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
 
-        return brandMatch && conditionMatch && priceMatch
+        return searchMatch && brandMatch && conditionMatch && priceMatch
       })
 
       switch (sort) {
@@ -131,7 +136,7 @@ import type {
         default:
           return nextProducts
       }
-    }, [priceRange, products, selectedBrand, selectedCondition, sort])
+    }, [priceRange, products, query, selectedBrand, selectedCondition, sort])
 
     const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
     const safePage = Math.min(currentPage, totalPages)
@@ -142,6 +147,10 @@ import type {
 
     const activeFilters = useMemo(() => {
       const chips: Array<{ label: string; onRemove: () => void }> = []
+
+      if (query.trim()) {
+        chips.push({ label: `Search: ${query}`, onRemove: () => updateParams({ q: null }) })
+      }
 
       for (const category of selectedCategories) {
         chips.push({ label: category, onRemove: () => toggleCategory(category) })
@@ -163,20 +172,16 @@ import type {
       }
 
       return chips
-    }, [selectedBrand, selectedCategories, selectedColor, selectedCondition, toggleCategory, updateParams])
+    }, [query, selectedBrand, selectedCategories, selectedColor, selectedCondition, toggleCategory, updateParams])
 
     const filterControls = (
       <>
         <div>
-          <h2 className="font-display text-3xl uppercase tracking-tight text-foreground">
-            Catalog Filters
-          </h2>
+          <h2 className="font-display text-3xl uppercase tracking-tight text-foreground">Catalog Filters</h2>
         </div>
 
         <div className="space-y-4">
-          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Category
-          </p>
+          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Category</p>
           <div className="space-y-3 text-sm text-foreground">
             {categories.map((category) => (
               <label key={category} className="flex cursor-pointer items-center gap-3">
@@ -193,9 +198,7 @@ import type {
         </div>
 
         <div className="space-y-4">
-          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Brand
-          </p>
+          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Brand</p>
           <div className="space-y-3 text-sm text-foreground">
             {brands.map((brand) => (
               <label key={brand} className="flex cursor-pointer items-center gap-3">
@@ -213,9 +216,7 @@ import type {
         </div>
 
         <div className="space-y-4">
-          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Price Range
-          </p>
+          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Price Range</p>
           <div className="px-1">
             <input
               type="range"
@@ -237,9 +238,7 @@ import type {
         </div>
 
         <div className="space-y-4">
-          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Condition
-          </p>
+          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Condition</p>
           <div className="flex flex-wrap gap-2">
             {(["new", "refurbished"] as const).map((condition) => (
               <button
@@ -259,9 +258,7 @@ import type {
         </div>
 
         <div className="space-y-4">
-          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Colorway
-          </p>
+          <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Colorway</p>
           <div className="flex gap-3">
             {swatches.map((swatch) => (
               <button
@@ -288,9 +285,7 @@ import type {
 
     return (
       <MotionPage className="flex flex-col gap-8 py-8 md:flex-row md:gap-12 md:py-12">
-        <aside className="hidden w-full max-w-[260px] shrink-0 space-y-10 md:block">
-          {filterControls}
-        </aside>
+        <aside className="hidden w-full max-w-[260px] shrink-0 space-y-10 md:block">{filterControls}</aside>
 
         <section className="min-w-0 flex-1">
           <MotionSection className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center md:mb-10 md:gap-6">
@@ -314,14 +309,10 @@ import type {
               </button>
 
               <div className="flex items-center rounded-lg bg-surface-low">
-                <span className="pl-4 text-[10px] font-bold uppercase tracking-[0.15em] text-content-secondary">
-                  Sort by
-                </span>
+                <span className="pl-4 text-[10px] font-bold uppercase tracking-[0.15em] text-content-secondary">Sort by</span>
                 <select
                   value={sort}
-                  onChange={(event) =>
-                    updateParams({ sort: event.target.value === "featured" ? null : event.target.value })
-                  }
+                  onChange={(event) => updateParams({ sort: event.target.value === "featured" ? null : event.target.value })}
                   className="border-none bg-transparent px-3 py-2.5 text-xs font-bold text-foreground outline-none [&>option]:bg-neutral-900 [&>option]:text-white"
                 >
                   <option value="featured">Featured</option>
@@ -336,16 +327,12 @@ import type {
           <Dialog open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <DialogContent className="top-auto bottom-0 left-0 right-0 max-w-none translate-x-0 translate-y-0 rounded-b-none rounded-t-3xl border border-border bg-background p-0 md:hidden">
               <DialogHeader className="border-b border-border px-5 py-4">
-                <DialogTitle className="text-base font-black uppercase tracking-[0.16em] text-foreground">
-                  Filters
-                </DialogTitle>
+                <DialogTitle className="text-base font-black uppercase tracking-[0.16em] text-foreground">Filters</DialogTitle>
                 <DialogDescription>
                   Refine the catalog for mobile screens without keeping the full filter rail open.
                 </DialogDescription>
               </DialogHeader>
-              <div className="max-h-[75dvh] space-y-8 overflow-y-auto px-5 py-5">
-                {filterControls}
-              </div>
+              <div className="max-h-[75dvh] space-y-8 overflow-y-auto px-5 py-5">{filterControls}</div>
             </DialogContent>
           </Dialog>
 
@@ -358,9 +345,7 @@ import type {
                   onClick={filter.onRemove}
                   className="inline-flex items-center gap-2 rounded-full bg-surface-high px-3 py-1.5 transition-colors hover:bg-surface-bright"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
-                    {filter.label}
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">{filter.label}</span>
                   <X className="size-3 text-content-secondary" />
                 </button>
               ))}
@@ -383,7 +368,9 @@ import type {
           {filteredProducts.length === 0 ? (
             <div className="py-20 text-center">
               <p className="font-display text-3xl uppercase text-content-secondary">No devices found</p>
-              <p className="mt-2 text-sm text-content-muted">Try adjusting your filters</p>
+              <p className="mt-2 text-sm text-content-muted">
+                {query.trim() ? `Try a broader search than "${query}" or remove some filters.` : "Try adjusting your filters."}
+              </p>
             </div>
           ) : null}
 

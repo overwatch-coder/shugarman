@@ -3,6 +3,7 @@
 import nodemailer from "nodemailer"
 
 import { getSession } from "@/lib/admin-auth"
+import { toContactMessageFirestoreDoc } from "@/lib/contact-message-doc"
 import { buildContactNotification } from "@/lib/contact-notifications"
 import { adminDb } from "@/lib/firebase-admin"
 import type { ContactInquiryType, ContactMessageDoc, ContactReplyDoc } from "@/lib/schemas"
@@ -40,7 +41,7 @@ async function appendReply({
     replies: [...(contact.replies ?? []), reply],
   }
 
-  await contactRef.set({ ...nextMessage, id: undefined }, { merge: false })
+  await contactRef.set(toContactMessageFirestoreDoc(nextMessage), { merge: false })
 
   return { success: true as const, contact: nextMessage }
 }

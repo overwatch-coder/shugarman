@@ -3,10 +3,11 @@
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
-import { ShoppingCart } from "lucide-react"
+import { Heart, ShoppingCart } from "lucide-react"
 
 import type { ProductCard as ProductCardType } from "@/lib/storefront-types"
 import { isExternalImageSource } from "@/lib/storefront-product-helpers"
+import { useWishlistStore } from "@/lib/wishlist-store"
 import { useCart } from "./cart-provider"
 
 function formatPrice(value: number, currency: string) {
@@ -26,7 +27,9 @@ export function ProductCard({
     product.badge ?? (product.condition === "new" ? "New" : "Refurbished")
   const shouldReduceMotion = useReducedMotion()
   const { addProductCard } = useCart()
+  const { hasItem, toggleItem } = useWishlistStore()
   const useNativeImage = isExternalImageSource(product.image)
+  const wishlisted = hasItem(product.slug)
 
   return (
     <motion.div
@@ -41,6 +44,14 @@ export function ProductCard({
         <span className="absolute left-3 top-3 z-10 rounded bg-primary px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-white">
           {badgeLabel}
         </span>
+        <button
+          type="button"
+          aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          onClick={() => toggleItem(product.slug)}
+          className={wishlisted ? "absolute right-3 top-3 z-10 inline-flex size-9 items-center justify-center rounded-full bg-primary text-white" : "absolute right-3 top-3 z-10 inline-flex size-9 items-center justify-center rounded-full bg-black/35 text-white/85 backdrop-blur-md transition-colors hover:bg-black/55"}
+        >
+          <Heart className="size-4" fill={wishlisted ? "currentColor" : "none"} />
+        </button>
         <Link href={`/shop/${product.slug}`} className="block h-full w-full">
           {useNativeImage ? (
             <img

@@ -2,7 +2,7 @@ import Link from "next/link"
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import type { IconType } from "react-icons"
 
-import { BRAND_TAGLINE } from "@/lib/brand"
+import { BRAND_TAGLINE, BRAND_NAME } from "@/lib/brand"
 import { getStorefrontMetadata } from "@/lib/storefront-dal"
 import { footerColumns } from "@/lib/storefront-data"
 import type { StoreMetadata } from "@/lib/storefront-types"
@@ -44,7 +44,7 @@ export async function StoreFooter() {
     <footer className="mt-24 bg-black/90 pt-16 text-white">
       <div className="mx-auto grid w-full max-w-[1440px] gap-12 px-8 md:grid-cols-4">
         <div className="md:col-span-1">
-          <div className="mb-4 text-2xl font-black uppercase tracking-tight">
+          <div className="mb-4 text-2xl font-black tracking-tight">
             {storeMetadata.name}
           </div>
           <p className="max-w-sm text-sm leading-7 text-white/60">
@@ -113,7 +113,7 @@ export async function StoreFooter() {
       </div>
 
       <div className="mx-auto mt-16 flex w-full max-w-[1440px] flex-col justify-between gap-4 border-t border-white/5 px-8 py-8 text-[10px] font-mono uppercase tracking-[0.2em] text-white/35 md:flex-row">
-        <p>© 2026 {storeMetadata.name}. {BRAND_TAGLINE}.</p>
+        <p>© 2026 {storeMetadata.name}. {storeMetadata.tagline || BRAND_TAGLINE}.</p>
         <div className="flex items-center gap-6">
           <p>Verified Secure</p>
           <Link

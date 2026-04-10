@@ -6,9 +6,19 @@ import Link from "next/link"
 import { Expand, Heart, MessageCircle, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
+
+import { getDisplayableColors, getDisplayableSpecs, getDisplayableStorageOptions } from "@/lib/product-detail-content"
 import type { ProductDetail } from "@/lib/storefront-types"
 import { getLinkedImageForColor } from "@/lib/product-color-links"
 import { hasInstallmentPlan, isExternalImageSource } from "@/lib/storefront-product-helpers"
+import { useWishlistStore } from "@/lib/wishlist-store"
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { useCart } from "./cart-provider"
 import { QuantityStepper } from "./quantity-stepper"
@@ -19,16 +29,22 @@ function formatPrice(value: number, currency: string) {
 }
 
 export function ProductDetailPageClient({ product }: { product: ProductDetail }) {
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name ?? "")
+  const displayableColors = getDisplayableColors(product.colors)
+  const displayableStorageOptions = getDisplayableStorageOptions(product.storageOptions)
+  const displayableSpecs = getDisplayableSpecs(product.specs)
+  const [selectedColor, setSelectedColor] = useState(displayableColors[0]?.name ?? "")
   const [activeImage, setActiveImage] = useState(
-    () => getLinkedImageForColor(product, product.colors[0]?.name ?? "") ?? product.images[0]
+    () => getLinkedImageForColor(product, displayableColors[0]?.name ?? "") ?? product.images[0]
   )
-  const [selectedStorage, setSelectedStorage] = useState(product.storageOptions[0]?.value ?? "")
+  const [imageZoomOpen, setImageZoomOpen] = useState(false)
+  const [selectedStorage, setSelectedStorage] = useState(displayableStorageOptions[0]?.value ?? "")
   const [quantity, setQuantity] = useState(1)
   const currentImage = activeImage ?? product.images[0]
   const shouldReduceMotion = useReducedMotion()
   const { addProductDetail } = useCart()
+  const { hasItem, toggleItem } = useWishlistStore()
   const installmentPlan = hasInstallmentPlan(product.installment) ? product.installment : null
+  const wishlisted = hasItem(product.slug)
 
   if (!currentImage) {
     return null
@@ -55,6 +71,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
               <button
                 type="button"
                 aria-label="Expand image"
+                onClick={() => setImageZoomOpen(true)}
                 className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-md transition-colors hover:bg-black/60"
               >
                 <Expand className="size-4" />
@@ -153,6 +170,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
           </div>
 
           <div className="space-y-6">
+            {displayableColors.length > 0 ? (
             <div>
               <p
                 className="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-content-secondary"
@@ -161,7 +179,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                 Select Color
               </p>
               <div className="flex gap-3">
-                {product.colors.map((color) => (
+                {displayableColors.map((color) => (
                   <button
                     key={color.name}
                     type="button"
@@ -180,7 +198,9 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                 ))}
               </div>
             </div>
+            ) : null}
 
+            {displayableStorageOptions.length > 0 ? (
             <div>
               <p
                 className="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-content-secondary"
@@ -189,7 +209,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                 Select Storage
               </p>
               <div className="flex flex-wrap gap-3">
-                {product.storageOptions.map((storage) => (
+                {displayableStorageOptions.map((storage) => (
                   <button
                     key={storage.value}
                     type="button"
@@ -201,6 +221,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                 ))}
               </div>
             </div>
+            ) : null}
 
             <div className="flex items-center gap-6">
               <QuantityStepper value={quantity} onChange={setQuantity} />
@@ -218,7 +239,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                 addProductDetail(product, {
                   color: selectedColor,
                   storage:
-                    product.storageOptions.find((storage) => storage.value === selectedStorage)?.label ?? selectedStorage,
+                    displayableStorageOptions.find((storage) => storage.value === selectedStorage)?.label ?? selectedStorage,
                   quantity,
                   image: currentImage,
                 })
@@ -229,9 +250,13 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
               Add to Cart
             </button>
             <div className="grid grid-cols-2 gap-4">
-              <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-surface-high px-4 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-foreground">
-                <Heart className="size-4" />
-                Wishlist
+              <button
+                type="button"
+                onClick={() => toggleItem(product.slug)}
+                className={wishlisted ? "inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-white" : "inline-flex items-center justify-center gap-2 rounded-md bg-surface-high px-4 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-foreground"}
+              >
+                <Heart className="size-4" fill={wishlisted ? "currentColor" : "none"} />
+                {wishlisted ? "Saved" : "Wishlist"}
               </button>
               <Link href={`https://wa.me/233${"558694853"}`} className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
                 <MessageCircle className="size-4" />
@@ -242,13 +267,78 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
         </div>
       </div>
 
+      <Dialog open={imageZoomOpen} onOpenChange={setImageZoomOpen}>
+        <DialogContent className="max-w-6xl border border-border bg-background p-0 sm:max-w-6xl">
+          <DialogHeader className="border-b border-border px-6 py-4">
+            <DialogTitle className="text-base font-black uppercase tracking-[0.16em] text-foreground">
+              {product.name} Gallery
+            </DialogTitle>
+            <DialogDescription>
+              Expanded product preview for closer inspection.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 p-4 lg:grid-cols-[1fr_120px]">
+            <div className="overflow-hidden rounded-2xl bg-surface-low">
+              {useNativeCurrentImage ? (
+                <img
+                  src={currentImage.src}
+                  alt={currentImage.alt}
+                  loading="eager"
+                  decoding="async"
+                  className="max-h-[75vh] w-full object-contain"
+                />
+              ) : (
+                <Image
+                  src={currentImage.src}
+                  alt={currentImage.alt}
+                  width={1600}
+                  height={1600}
+                  className="max-h-[75vh] w-full object-contain"
+                />
+              )}
+            </div>
+
+            <div className="flex gap-3 overflow-x-auto lg:flex-col lg:overflow-y-auto">
+              {product.images.map((image) => (
+                <button
+                  key={`zoom-${image.src}`}
+                  type="button"
+                  onClick={() => setActiveImage(image)}
+                  className={image.src === currentImage.src ? "w-20 shrink-0 overflow-hidden rounded-xl border-2 border-primary bg-surface-high lg:w-24" : "w-20 shrink-0 overflow-hidden rounded-xl border-2 border-transparent bg-surface-high lg:w-24"}
+                >
+                  {isExternalImageSource(image.src) ? (
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-square h-auto w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      width={160}
+                      height={160}
+                      className="aspect-square h-auto w-full object-cover"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <MotionSection className="mt-24 max-w-5xl space-y-4" delay={0.04}>
+        {displayableSpecs.length > 0 ? (
         <div className="bg-surface p-6">
           <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-foreground">
             Technical Specifications
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {product.specs.map((spec) => (
+            {displayableSpecs.map((spec) => (
               <div key={spec.label} className="flex items-center justify-between border-b border-white/5 py-3 text-sm">
                 <span className="uppercase text-content-secondary">{spec.label}</span>
                 <span className="text-foreground">{spec.value}</span>
@@ -256,6 +346,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
             ))}
           </div>
         </div>
+        ) : null}
 
         {installmentPlan ? (
           <div className="bg-surface p-6">
