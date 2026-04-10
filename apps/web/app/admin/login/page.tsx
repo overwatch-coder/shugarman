@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { getFirebaseAuth } from "@/lib/firebase"
 import { createSession } from "@/lib/admin-auth"
+import { BrandMark } from "@/components/shared/brand-mark"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -56,9 +57,9 @@ export default function AdminLoginPage() {
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500">
             Admin Portal
           </p>
-          <h1 className="mt-3 font-display text-4xl font-black uppercase tracking-tight text-white">
-            Sugar Man iStore
-          </h1>
+          <div className="mt-3 flex justify-center">
+            <BrandMark textClassName="text-2xl text-white sm:text-4xl" />
+          </div>
         </div>
 
         {/* Login card */}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Bell, Check, CheckCheck, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import type { NotificationDoc } from "@/lib/schemas"
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications"
 import {
   markNotificationRead,
   markAllNotificationsRead,
@@ -37,9 +38,10 @@ export function NotificationsClient({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [notifications, setNotifications] = useState(initialNotifications)
-
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const { notifications, setNotifications, unreadCount } = useRealtimeNotifications(
+    initialNotifications,
+    50
+  )
 
   function markRead(id: string) {
     setNotifications((prev) =>

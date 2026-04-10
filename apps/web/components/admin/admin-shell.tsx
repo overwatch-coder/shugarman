@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  MessageSquareMore,
   Package,
   Settings,
   ShoppingCart,
@@ -25,7 +26,9 @@ import { toast } from "sonner"
 
 import { cn } from "@workspace/ui/lib/utils"
 
+import { BrandMark } from "@/components/shared/brand-mark"
 import { useAppTheme } from "@/components/theme-provider"
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications"
 import { destroySession } from "@/lib/admin-auth"
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions/notifications"
 import type { NotificationDoc } from "@/lib/schemas"
@@ -43,6 +46,7 @@ const navItems = [
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/brands", label: "Brands", icon: Box },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/contacts", label: "Contacts", icon: MessageSquareMore },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/settings", label: "Store Settings", icon: Settings },
 ]
@@ -73,6 +77,7 @@ function getDefaultPageTitle(pathname: string) {
   if (pathname === "/admin/categories") return "Categories"
   if (pathname === "/admin/brands") return "Brands"
   if (pathname === "/admin/orders") return "Orders"
+  if (pathname === "/admin/contacts") return "Contacts"
   if (pathname === "/admin/notifications") return "Notifications"
   if (pathname === "/admin/settings") return "Store Settings"
 
@@ -120,15 +125,16 @@ export function AdminShell({
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const [notifications, setNotifications] = useState(initialNotifications)
   const [pageTitleOverride, setPageTitleOverride] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const notificationMenuRef = useRef<HTMLDivElement>(null)
   const { theme, toggleTheme } = useAppTheme()
+  const { notifications, setNotifications, unreadCount } = useRealtimeNotifications(
+    initialNotifications,
+    6
+  )
   const activeSectionLabel = getActiveNavLabel(pathname)
   const pageTitle = pageTitleOverride ?? getDefaultPageTitle(pathname)
-
-  const unreadCount = notifications.filter((notification) => !notification.read).length
 
   useEffect(() => {
     setPageTitleOverride(null)
@@ -194,12 +200,13 @@ export function AdminShell({
   const sidebar = (
     <div className="flex h-full flex-col bg-card/95">
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Store className="size-4" />
-        </div>
+        <BrandMark
+          className="min-w-0"
+          iconClassName="size-8 rounded-lg"
+          textClassName={collapsed ? "hidden" : "truncate text-sm text-foreground"}
+        />
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-foreground">Sugar Man</p>
             <p className="text-[10px] uppercase tracking-wider text-content-secondary">Admin</p>
           </div>
         )}

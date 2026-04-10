@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -30,6 +30,7 @@ import { getFirebaseStorage } from "@/lib/firebase"
 import {
   buildRelatedProductOptions,
   getNextCreateSlugState,
+  selectPrimaryGalleryImage,
   slugify,
   toggleRelatedSlug,
 } from "@/lib/admin/product-editor-helpers"
@@ -127,14 +128,26 @@ interface ImageEntry {
 function ImageGalleryEditor({
   images,
   onChange,
+  onSetPrimary,
 }: {
   images: ProductImage[]
   onChange: (imgs: ProductImage[]) => void
+  onSetPrimary: (index: number) => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [entries, setEntries] = useState<ImageEntry[]>(
     images.map((img) => ({ src: img.src, alt: img.alt }))
   )
+
+  useEffect(() => {
+    setEntries((prev) => {
+      if (prev.some((entry) => entry.uploading)) {
+        return prev
+      }
+
+      return images.map((img) => ({ src: img.src, alt: img.alt }))
+    })
+  }, [images])
 
   function syncUp(next: ImageEntry[]) {
     setEntries(next)
@@ -271,6 +284,15 @@ function ImageGalleryEditor({
                     Primary
                   </span>
                 )}
+                {!entry.uploading && idx !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onSetPrimary(idx)}
+                    className="absolute bottom-2 right-2 rounded-md bg-black/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-primary"
+                  >
+                    Set as primary
+                  </button>
+                )}
               </div>
               <input
                 value={entry.alt}
@@ -326,7 +348,7 @@ function ImageGalleryEditor({
       />
 
       <p className="text-[11px] text-content-muted">
-        First image is the primary card image. Upload or paste multiple images.
+        First image is the primary gallery image. Upload or paste multiple images, then promote any uploaded image to the first slot.
       </p>
     </div>
   )
@@ -627,13 +649,30 @@ export function ProductEditor({
     update("relatedSlugs", toggleRelatedSlug(form.relatedSlugs, slug))
   }
 
-  // Keep primary image in sync with first gallery image
   function handleGalleryChange(imgs: ProductImage[]) {
-    update("images", imgs)
-    if (imgs.length > 0 && !form.image) {
-      update("image", imgs[0]!.src)
-      update("imageAlt", imgs[0]!.alt)
-    }
+    setForm((prev) => {
+      const nextPrimaryImage = imgs[0]
+      const currentImageCameFromGallery = prev.images.some((image) => image.src === prev.image)
+
+      return {
+        ...prev,
+        images: imgs,
+        image: !prev.image || currentImageCameFromGallery ? (nextPrimaryImage?.src ?? "") : prev.image,
+        imageAlt:
+          !prev.image || currentImageCameFromGallery ? (nextPrimaryImage?.alt ?? "") : prev.imageAlt,
+      }
+    })
+  }
+
+  function handleSetPrimaryGalleryImage(selectedIndex: number) {
+    setForm((prev) => ({
+      ...prev,
+      ...selectPrimaryGalleryImage({
+        images: prev.images,
+        colors: prev.colors,
+        selectedIndex,
+      }),
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -957,9 +996,13 @@ export function ProductEditor({
 
       {/* Media */}
       <Section title="Images">
-        <ImageGalleryEditor images={form.images} onChange={handleGalleryChange} />
+        <ImageGalleryEditor
+          images={form.images}
+          onChange={handleGalleryChange}
+          onSetPrimary={handleSetPrimaryGalleryImage}
+        />
         <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-          <Field label="Primary Image URL" hint="Overrides the first gallery image for card display">
+          <Field label="Primary Image URL" hint="Optional override for an external image. Leave empty to use the selected gallery primary image.">
             <input
               value={form.image}
               onChange={(e) => update("image", e.target.value)}

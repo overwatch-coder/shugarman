@@ -5,6 +5,7 @@ import { useMemo, useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, ChevronLeft, CreditCard, MapPin, ShieldCheck, Truck } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -135,13 +136,10 @@ export function CheckoutPageClient({
     return nextErrors.length === 0
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (!validateCurrentStep()) return
     if (step === "payment") {
-      // Submit order to Firestore, then show success
-      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      const shippingCost = shippingMethod?.price ?? 0
-      createOrder({
+      const result = await createOrder({
         customer: shippingAddress,
         shipping: shippingMethod!,
         payment: paymentMethod!,
@@ -154,15 +152,21 @@ export function CheckoutPageClient({
           currency: item.currency,
           quantity: item.quantity,
         })),
-        subtotal,
-        shippingCost,
-        tax: 0,
-        total: subtotal + shippingCost,
+        subtotal: summary.subtotal,
+        shippingCost: summary.shipping,
+        tax: summary.tax,
+        total: summary.total,
         currency: "GHC",
         notes: shippingAddress.notes,
-      }).catch(() => {
-        // Order persists locally even if Firestore fails
       })
+
+      if (!result.success) {
+        const message = result.error ?? "We couldn't save your order. Please try again."
+        setErrors([message])
+        toast.error(message)
+        return
+      }
+
       placeOrder()
       return
     }
@@ -311,7 +315,7 @@ export function CheckoutPageClient({
         <div>
           <h2 className="font-display text-4xl uppercase tracking-tight text-foreground">Order Received</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-content-secondary">
-            Your order has been staged for verification. A Sugar Man iStore specialist will contact you via
+            Your order has been staged for verification. A SHUGARMAN iSTORE specialist will contact you via
             WhatsApp or phone to confirm payment and delivery details.
           </p>
         </div>
@@ -451,7 +455,7 @@ export function CheckoutPageClient({
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-primary">Secure checkout</p>
           <h1 className="font-display text-6xl uppercase tracking-tight text-foreground">Precision Checkout</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-content-secondary">
-            Complete your order with Sugar Man iStore. Fast confirmation, local support, and protected delivery across Kumasi.
+            Complete your order with SHUGARMAN iSTORE. Fast confirmation, local support, and protected delivery across Kumasi.
           </p>
         </div>
         <div className="flex items-center gap-3 bg-surface-low px-5 py-4 text-sm text-content-secondary">

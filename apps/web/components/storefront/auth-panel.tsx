@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand"
 
 type AuthView = "menu" | "customer-signin" | "customer-signup"
 
@@ -150,7 +151,7 @@ function CustomerSignUp({ onBack }: { onBack: () => void }) {
         </button>
         <h2 className="text-xl font-black tracking-tight text-foreground">Create account</h2>
         <p className="mt-1 text-sm text-content-secondary">
-          Join Sugar Man iStore for exclusive perks
+          Join SHUGARMAN iSTORE for exclusive perks
         </p>
         <div className="mt-2">
           <ComingSoonBadge />
@@ -451,7 +452,7 @@ export function AuthPanel({ open, onClose }: AuthPanelProps) {
             {/* Panel footer */}
             <div className="border-t border-border px-6 py-4">
               <p className="text-center text-[10px] text-content-muted">
-                Sugar Man iStore — Cinematic Precision Engineering
+                {BRAND_NAME} - {BRAND_TAGLINE}
               </p>
             </div>
           </motion.div>

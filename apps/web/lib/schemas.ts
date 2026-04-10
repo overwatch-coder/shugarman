@@ -150,6 +150,42 @@ export interface SocialLink {
   url: string
 }
 
+// ─── Contact Messages ────────────────────────────────────────────────────────
+
+export type ContactInquiryType =
+  | "general"
+  | "product"
+  | "repair"
+  | "installment"
+  | "trade-in"
+  | "other"
+
+export type ContactMessageStatus = "new" | "read" | "replied"
+
+export interface ContactReplyDoc {
+  id: string
+  channel: "email" | "mailto"
+  subject: string
+  message: string
+  sentAt: string
+  sentBy: string
+}
+
+/** Firestore: /contactMessages/{id} */
+export interface ContactMessageDoc {
+  id: string
+  name: string
+  email: string
+  phone: string
+  inquiryType: ContactInquiryType
+  message: string
+  status: ContactMessageStatus
+  read: boolean
+  replies: ContactReplyDoc[]
+  createdAt: string
+  updatedAt: string
+}
+
 /** Firestore: /settings/store */
 export interface StoreSettingsDoc {
   name: string

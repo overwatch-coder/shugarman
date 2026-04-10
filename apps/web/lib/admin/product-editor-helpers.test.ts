@@ -4,6 +4,7 @@ import assert from "node:assert/strict"
 import {
   buildRelatedProductOptions,
   getNextCreateSlugState,
+  selectPrimaryGalleryImage,
   toggleRelatedSlug,
 } from "./product-editor-helpers"
 
@@ -47,4 +48,33 @@ test("toggleRelatedSlug adds and removes unique related product slugs", () => {
   assert.deepEqual(toggleRelatedSlug([], "iphone-15"), ["iphone-15"])
   assert.deepEqual(toggleRelatedSlug(["iphone-15"], "iphone-15"), [])
   assert.deepEqual(toggleRelatedSlug(["iphone-15"], "galaxy-s24"), ["iphone-15", "galaxy-s24"])
+})
+
+test("selectPrimaryGalleryImage moves the selected upload first and remaps linked colors", () => {
+  const result = selectPrimaryGalleryImage({
+    images: [
+      { src: "/black-front.jpg", alt: "Black front" },
+      { src: "/blue-front.jpg", alt: "Blue front" },
+      { src: "/green-front.jpg", alt: "Green front" },
+    ],
+    colors: [
+      { name: "Black", hex: "#111111", imageIndices: [0] },
+      { name: "Blue", hex: "#3366ff", imageIndices: [1] },
+      { name: "Green", hex: "#00aa66", imageIndices: [2] },
+    ],
+    selectedIndex: 2,
+  })
+
+  assert.deepEqual(result.images, [
+    { src: "/green-front.jpg", alt: "Green front" },
+    { src: "/black-front.jpg", alt: "Black front" },
+    { src: "/blue-front.jpg", alt: "Blue front" },
+  ])
+  assert.equal(result.image, "/green-front.jpg")
+  assert.equal(result.imageAlt, "Green front")
+  assert.deepEqual(result.colors, [
+    { name: "Black", hex: "#111111", imageIndices: [1] },
+    { name: "Blue", hex: "#3366ff", imageIndices: [2] },
+    { name: "Green", hex: "#00aa66", imageIndices: [0] },
+  ])
 })

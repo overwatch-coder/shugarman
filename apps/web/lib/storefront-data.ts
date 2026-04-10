@@ -14,9 +14,10 @@ import type {
   StoreMetadata,
   TrustPoint,
 } from "./storefront-types"
+import { BRAND_NAME } from "./brand"
 
 export const storeMetadata: StoreMetadata = {
-  name: "Sugar Man iStore",
+  name: BRAND_NAME,
   tagline: "Every Phone. Every Price. Every Person.",
   description:
     "Premium smartphone retail, accessories, and device support in the heart of Kumasi with flexible installment options.",
@@ -554,12 +555,12 @@ export const aboutPageContent: AboutPageContent = {
     badge: "Kumasi's Trusted Phone Store",
     headline: "We Believe Every Person Deserves a Great Phone",
     subheadline:
-      "Sugar Man iStore was built on one simple conviction: premium smartphones shouldn't be out of reach for anyone in Kumasi.",
+      `${BRAND_NAME} was built on one simple conviction: premium smartphones shouldn't be out of reach for anyone in Kumasi.`,
   },
   story: {
     heading: "Our Story",
     paragraphs: [
-      "Sugar Man iStore opened its doors in the heart of Kumasi's Adum district with a singular mission — to make world-class smartphones accessible to every Ghanaian. We've seen how a great device can transform education, business and daily life, and we wanted to be the store that breaks down the price barrier.",
+      `${BRAND_NAME} opened its doors in the heart of Kumasi's Adum district with a singular mission — to make world-class smartphones accessible to every Ghanaian. We've seen how a great device can transform education, business and daily life, and we wanted to be the store that breaks down the price barrier.`,
       "Located at the iconic Asempa Pharmacy Building near the Otumfour Statue, we've grown from a small retail counter into Kumasi's go-to destination for new phones, certified refurbished devices, expert repairs, and flexible installment plans that fit real budgets.",
       "Every phone we sell is personally vetted. Every repair is done by trained technicians. And every customer walks out knowing we stand behind our work.",
     ],
@@ -599,7 +600,7 @@ export const aboutPageContent: AboutPageContent = {
     {
       year: "2021",
       title: "Store Opens",
-      description: "Sugar Man iStore launches in Adum, Kumasi, selling new and refurbished smartphones.",
+      description: `${BRAND_NAME} launches in Adum, Kumasi, selling new and refurbished smartphones.`,
     },
     {
       year: "2022",
@@ -619,7 +620,7 @@ export const aboutPageContent: AboutPageContent = {
     {
       year: "2025",
       title: "iStore.com Launches",
-      description: "Our online storefront goes live, bringing the Sugar Man iStore experience to all of Ghana.",
+      description: `Our online storefront goes live, bringing the ${BRAND_NAME} experience to all of Ghana.`,
     },
   ],
   team: [
@@ -627,7 +628,7 @@ export const aboutPageContent: AboutPageContent = {
       id: "emmanuel",
       name: "Emmanuel Fosu",
       role: "Founder & CEO",
-      bio: "Emmanuel founded Sugar Man iStore with a passion for making great technology accessible. He personally oversees every product selection and pricing decision.",
+      bio: `Emmanuel founded ${BRAND_NAME} with a passion for making great technology accessible. He personally oversees every product selection and pricing decision.`,
     },
     {
       id: "repair-lead",

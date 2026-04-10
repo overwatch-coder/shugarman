@@ -2,6 +2,7 @@ import Link from "next/link"
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import type { IconType } from "react-icons"
 
+import { BRAND_TAGLINE } from "@/lib/brand"
 import { getStorefrontMetadata } from "@/lib/storefront-dal"
 import { footerColumns } from "@/lib/storefront-data"
 import type { StoreMetadata } from "@/lib/storefront-types"
@@ -109,7 +110,7 @@ export async function StoreFooter() {
       </div>
 
       <div className="mx-auto mt-16 flex w-full max-w-[1440px] flex-col justify-between gap-4 border-t border-white/5 px-8 py-8 text-[10px] font-mono uppercase tracking-[0.2em] text-white/35 md:flex-row">
-        <p>© 2026 Sugar Man iStore. Cinematic Precision Engineering.</p>
+        <p>© 2026 {storeMetadata.name}. {BRAND_TAGLINE}.</p>
         <div className="flex items-center gap-6">
           <p>Verified Secure</p>
           <Link

@@ -13,8 +13,10 @@ import {
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { toast } from "sonner"
 
 import type { ContactPageContent, StoreMetadata } from "@/lib/storefront-types"
+import { createContactMessage } from "@/lib/actions/contacts"
 
 /* ── Icon resolvers ──────────────────────────────────────────────── */
 const channelIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -81,9 +83,22 @@ export function ContactPageClient({ content, storeMetadata }: ContactPageClientP
     setFormState((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // When a back-office API is ready, POST formState here.
+    const result = await createContactMessage({
+      name: formState.name,
+      email: formState.email,
+      phone: formState.phone,
+      inquiryType: formState.inquiryType,
+      message: formState.message,
+    })
+
+    if (!result.success) {
+      toast.error(result.error ?? "Failed to send your message.")
+      return
+    }
+
+    toast.success("Your message has been received.")
     setSubmitted(true)
   }
 

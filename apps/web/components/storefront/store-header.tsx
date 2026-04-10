@@ -8,6 +8,7 @@ import { Heart, Search, ShoppingCart, UserRound } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 
+import { BrandMark } from "@/components/shared/brand-mark"
 import { navigationLinks } from "@/lib/storefront-data"
 import { AnimatedCounter } from "./motion-primitives"
 import { ThemeToggle } from "./theme-toggle"
@@ -23,8 +24,8 @@ export function StoreHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 sf-glass">
       <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 lg:px-8">
-        <Link href="/" className="text-lg font-black uppercase tracking-tight text-foreground">
-          Sugar Man iStore
+        <Link href="/" className="text-foreground">
+          <BrandMark textClassName="text-base text-foreground sm:text-lg" iconClassName="size-9 rounded-lg" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

@@ -7,6 +7,7 @@ import { AppToaster } from "@/components/shared/app-toaster"
 import { CartProvider } from "@/components/storefront/cart-provider"
 import { TrafficTracker } from "@/components/storefront/traffic-tracker"
 import { ThemeProvider } from "@/components/theme-provider"
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand"
 import { cn } from "@workspace/ui/lib/utils"
 
 const inter = Inter({
@@ -32,7 +33,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "Sugar Man iStore | Cinematic Precision Engineering",
+  title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
   description:
     "New, refurbished & unlocked phones in Kumasi — with flexible payment plans. Experience the future of mobile retail.",
 }

@@ -47,4 +47,68 @@ export function toggleRelatedSlug(selectedSlugs: string[], slug: string) {
     : [...selectedSlugs, slug]
 }
 
+type GalleryImage = {
+  src: string
+  alt: string
+}
+
+type GalleryColor = {
+  name: string
+  hex: string
+  imageIndices?: number[]
+}
+
+export function selectPrimaryGalleryImage<TImage extends GalleryImage, TColor extends GalleryColor>({
+  images,
+  colors,
+  selectedIndex,
+}: {
+  images: TImage[]
+  colors: TColor[]
+  selectedIndex: number
+}) {
+  if (selectedIndex < 0 || selectedIndex >= images.length) {
+    return {
+      images,
+      colors,
+      image: images[0]?.src ?? "",
+      imageAlt: images[0]?.alt ?? "",
+    }
+  }
+
+  const selectedImage = images[selectedIndex]
+  if (!selectedImage) {
+    return {
+      images,
+      colors,
+      image: images[0]?.src ?? "",
+      imageAlt: images[0]?.alt ?? "",
+    }
+  }
+
+  const nextImages = [selectedImage, ...images.filter((_, index) => index !== selectedIndex)]
+  const nextIndexByPreviousIndex = new Map<number, number>([[selectedIndex, 0]])
+
+  let nextImageIndex = 1
+  for (let index = 0; index < images.length; index += 1) {
+    if (index === selectedIndex) continue
+    nextIndexByPreviousIndex.set(index, nextImageIndex)
+    nextImageIndex += 1
+  }
+
+  const nextColors = colors.map((color) => ({
+    ...color,
+    imageIndices: color.imageIndices
+      ?.map((index) => nextIndexByPreviousIndex.get(index))
+      .filter((index): index is number => typeof index === "number"),
+  }))
+
+  return {
+    images: nextImages,
+    colors: nextColors,
+    image: selectedImage.src,
+    imageAlt: selectedImage.alt,
+  }
+}
+
 export { slugify }

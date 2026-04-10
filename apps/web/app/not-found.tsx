@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
+import { BRAND_NAME } from "@/lib/brand"
+
 export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl items-center px-6 py-16">
@@ -14,7 +16,7 @@ export default function NotFound() {
           <span className="text-primary">Inventory.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-8 text-content-secondary md:text-lg">
-          The page you requested does not exist, or this product is not currently available in the Sugar Man iStore catalog.
+          The page you requested does not exist, or this product is not currently available in the {BRAND_NAME} catalog.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link

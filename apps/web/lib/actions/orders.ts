@@ -50,13 +50,30 @@ export async function createOrder(
 ): Promise<{ success: boolean; orderId?: string; error?: string }> {
   try {
     const now = new Date().toISOString()
-    const ref = await adminDb.collection(COLLECTION).add({
+    const orderRef = adminDb.collection(COLLECTION).doc()
+    const notificationRef = adminDb.collection("notifications").doc()
+    const customerName = [data.customer.firstName, data.customer.lastName].filter(Boolean).join(" ")
+    const batch = adminDb.batch()
+
+    batch.set(orderRef, {
       ...data,
       status: "pending",
       createdAt: now,
       updatedAt: now,
     })
-    return { success: true, orderId: ref.id }
+    batch.set(notificationRef, {
+      event: "new_order",
+      level: "success",
+      title: "New order received",
+      message: `${customerName || data.customer.email} placed an order for ${data.currency} ${data.total.toLocaleString()}.`,
+      read: false,
+      resourceSlug: orderRef.id,
+      resourceType: "order",
+      createdAt: now,
+    })
+
+    await batch.commit()
+    return { success: true, orderId: orderRef.id }
   } catch (err) {
     console.error("createOrder:", err)
     return { success: false, error: "Failed to create order" }

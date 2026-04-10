@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { StoreSettingsDoc, SocialLink } from "@/lib/schemas"
 import { saveStoreSettings } from "@/lib/actions/settings"
 import { buildSocialUrl, normalizeSocialLink } from "@/lib/admin/settings-helpers"
+import { BRAND_NAME } from "@/lib/brand"
 
 const SOCIAL_PLATFORMS = [
   "Facebook",
@@ -31,7 +32,7 @@ export function SettingsClient({
   const [isPending, startTransition] = useTransition()
   const [form, setForm] = useState<StoreSettingsDoc>(
     initialSettings ?? {
-      name: "Sugar Man iStore",
+      name: BRAND_NAME,
       tagline: "",
       description: "",
       phone: "",
