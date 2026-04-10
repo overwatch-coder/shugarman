@@ -81,7 +81,7 @@ export interface ProductDetail {
   inStock: boolean;
   images: { src: string; alt: string }[];
   specs: TechSpec[];
-  installment: InstallmentPlan;
+  installment: InstallmentPlan | null;
   relatedProducts: ProductCard[];
 }
 

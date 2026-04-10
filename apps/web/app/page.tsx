@@ -33,9 +33,9 @@ export default async function Page() {
 
   return (
     <StoreShell className="px-0 lg:px-0">
-      <MotionSection className="grid min-h-[calc(100vh-88px)] items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:px-8 lg:py-24">
+      <MotionSection className="grid min-h-[calc(100vh-88px)] items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-24">
         <div>
-          <h1 className="font-display text-7xl uppercase leading-[0.9] tracking-tight text-foreground md:text-8xl lg:text-[7rem]">
+          <h1 className="font-display text-5xl uppercase leading-[0.9] tracking-tight text-foreground sm:text-6xl md:text-8xl lg:text-[7rem]">
             Shop Smarter.
             <br />
             <span className="text-primary">Live Better.</span>
@@ -136,7 +136,7 @@ export default async function Page() {
             View All Deals
           </Link>
         </div>
-        <MotionList className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+        <MotionList className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {featuredProducts.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}

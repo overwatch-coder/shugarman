@@ -8,6 +8,11 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
         pathname: "/aida-public/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.apple.com",
+        pathname: "/**",
+      }
     ],
   },
 }

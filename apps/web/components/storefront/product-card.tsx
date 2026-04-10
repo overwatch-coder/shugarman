@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "framer-motion"
 import { ShoppingCart } from "lucide-react"
 
 import type { ProductCard as ProductCardType } from "@/lib/storefront-types"
+import { isExternalImageSource } from "@/lib/storefront-product-helpers"
 import { useCart } from "./cart-provider"
 
 function formatPrice(value: number, currency: string) {
@@ -25,6 +26,7 @@ export function ProductCard({
     product.badge ?? (product.condition === "new" ? "New" : "Refurbished")
   const shouldReduceMotion = useReducedMotion()
   const { addProductCard } = useCart()
+  const useNativeImage = isExternalImageSource(product.image)
 
   return (
     <motion.div
@@ -40,13 +42,23 @@ export function ProductCard({
           {badgeLabel}
         </span>
         <Link href={`/shop/${product.slug}`} className="block h-full w-full">
-          <Image
-            src={product.image}
-            alt={product.imageAlt}
-            width={420}
-            height={420}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {useNativeImage ? (
+            <img
+              src={product.image}
+              alt={product.imageAlt}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={product.image}
+              alt={product.imageAlt}
+              width={420}
+              height={420}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )}
         </Link>
         {showHoverCart ? (
           <button

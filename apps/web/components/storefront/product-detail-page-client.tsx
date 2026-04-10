@@ -8,6 +8,7 @@ import { useState } from "react"
 
 import type { ProductDetail } from "@/lib/storefront-types"
 import { getLinkedImageForColor } from "@/lib/product-color-links"
+import { hasInstallmentPlan, isExternalImageSource } from "@/lib/storefront-product-helpers"
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { useCart } from "./cart-provider"
 import { QuantityStepper } from "./quantity-stepper"
@@ -27,13 +28,16 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
   const currentImage = activeImage ?? product.images[0]
   const shouldReduceMotion = useReducedMotion()
   const { addProductDetail } = useCart()
+  const installmentPlan = hasInstallmentPlan(product.installment) ? product.installment : null
 
   if (!currentImage) {
     return null
   }
 
+  const useNativeCurrentImage = isExternalImageSource(currentImage.src)
+
   return (
-    <MotionPage className="py-12">
+    <MotionPage className="py-8 md:py-12">
       <nav className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-content-secondary">
         <Link href="/shop" className="hover:text-primary">
           Shop
@@ -64,13 +68,23 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                   transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
                   className="h-full w-full"
                 >
-                  <Image
-                    src={currentImage.src}
-                    alt={currentImage.alt}
-                    width={900}
-                    height={1100}
-                    className="h-full w-full object-cover"
-                  />
+                  {useNativeCurrentImage ? (
+                    <img
+                      src={currentImage.src}
+                      alt={currentImage.alt}
+                      loading="eager"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={currentImage.src}
+                      alt={currentImage.alt}
+                      width={900}
+                      height={1100}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -82,7 +96,17 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
                   onClick={() => setActiveImage(image)}
                   className={image.src === currentImage.src ? "w-20 shrink-0 overflow-hidden rounded-lg border-2 border-primary md:w-24" : "w-20 shrink-0 overflow-hidden rounded-lg border-2 border-transparent bg-surface-high md:w-24"}
                 >
-                  <Image src={image.src} alt={image.alt} width={160} height={160} className="aspect-square h-auto w-full object-cover" />
+                  {isExternalImageSource(image.src) ? (
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-square h-auto w-full object-cover"
+                    />
+                  ) : (
+                    <Image src={image.src} alt={image.alt} width={160} height={160} className="aspect-square h-auto w-full object-cover" />
+                  )}
                 </button>
               ))}
             </div>
@@ -97,7 +121,7 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
             >
               {product.brand}
             </p>
-            <h1 className="font-display text-6xl leading-none tracking-tight text-foreground md:text-7xl">
+            <h1 className="font-display text-4xl leading-none tracking-tight text-foreground sm:text-5xl md:text-7xl">
               {product.name}
             </h1>
             <div className="mt-4 flex items-center gap-4">
@@ -116,14 +140,16 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
             <div className="font-mono text-4xl font-bold text-primary">
               {formatPrice(product.price, product.currency)}
             </div>
-            <div className="rounded-xl bg-surface-low p-6">
-              <p className="mb-2 text-sm font-bold uppercase tracking-[0.12em] text-foreground">
-                Flexible Payment Plan
-              </p>
-              <p className="text-sm leading-7 text-content-secondary">
-                Pay <span className="font-semibold text-foreground">{formatPrice(product.installment.downPayment, product.currency)}</span> now, then spread the balance over <span className="font-semibold text-foreground">{product.installment.weeks} weeks</span>. {product.installment.interestNote}
-              </p>
-            </div>
+            {installmentPlan ? (
+              <div className="rounded-xl bg-surface-low p-6">
+                <p className="mb-2 text-sm font-bold uppercase tracking-[0.12em] text-foreground">
+                  Flexible Payment Plan
+                </p>
+                <p className="text-sm leading-7 text-content-secondary">
+                  Pay <span className="font-semibold text-foreground">{formatPrice(installmentPlan.downPayment, product.currency)}</span> now, then spread the balance over <span className="font-semibold text-foreground">{installmentPlan.weeks} weeks</span>. {installmentPlan.interestNote}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-6">
@@ -231,24 +257,26 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
           </div>
         </div>
 
-        <div className="bg-surface p-6">
-          <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-foreground">
-            Payment Plan Details
-          </h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-content-secondary">
-            Secure your device today with a {product.installment?.downPaymentPercent || 50}% upfront payment. The remaining balance is split into {product.installment?.weeks || 0} weekly payments of {formatPrice(product.installment?.weeklyRate || 0, product.currency)}.
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="bg-surface-high p-4">
-              <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Due Today</p>
-              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment?.downPayment || 0, product.currency)}</p>
-            </div>
-            <div className="bg-surface-high p-4">
-              <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Weekly Rate</p>
-              <p className="font-mono text-xl text-foreground">{formatPrice(product.installment?.weeklyRate || 0, product.currency)}</p>
+        {installmentPlan ? (
+          <div className="bg-surface p-6">
+            <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-foreground">
+              Payment Plan Details
+            </h2>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-content-secondary">
+              Secure your device today with a {installmentPlan.downPaymentPercent}% upfront payment. The remaining balance is split into {installmentPlan.weeks} weekly payments of {formatPrice(installmentPlan.weeklyRate, product.currency)}.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="bg-surface-high p-4">
+                <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Due Today</p>
+                <p className="font-mono text-xl text-foreground">{formatPrice(installmentPlan.downPayment, product.currency)}</p>
+              </div>
+              <div className="bg-surface-high p-4">
+                <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">Weekly Rate</p>
+                <p className="font-mono text-xl text-foreground">{formatPrice(installmentPlan.weeklyRate, product.currency)}</p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </MotionSection>
 
       <MotionSection className="mt-28" delay={0.08}>

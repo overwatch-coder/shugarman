@@ -76,7 +76,63 @@ export function ProductsClient({
             {search ? "No products match your search." : "No products yet. Add your first product."}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="grid gap-3 p-3 md:hidden">
+              {filtered.map((product) => (
+                <article key={product.slug} className="rounded-xl border border-border bg-surface p-4">
+                  <div className="flex items-start gap-3">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.imageAlt}
+                        className="size-16 rounded-xl bg-surface-high object-cover"
+                      />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-foreground">{product.name}</p>
+                      <p className="mt-1 truncate text-xs text-content-secondary">{product.slug}</p>
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs text-content-secondary">
+                        <span>{product.brand}</span>
+                        <span>•</span>
+                        <span>
+                          {product.currency} {product.price.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span
+                      className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        product.condition === "new"
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : "bg-amber-500/10 text-amber-500"
+                      }`}
+                    >
+                      {product.condition}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/admin/products/${product.slug}/edit`}
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-accent hover:text-foreground"
+                      >
+                        <Pencil className="size-3.5" />
+                      </Link>
+                      <button
+                        onClick={() => setDeletingSlug(product.slug)}
+                        disabled={isPending}
+                        className="rounded-lg p-2 text-content-secondary transition-colors hover:bg-red-500/10 hover:text-red-500"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
@@ -152,7 +208,8 @@ export function ProductsClient({
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
 

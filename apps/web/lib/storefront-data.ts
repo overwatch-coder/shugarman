@@ -156,10 +156,10 @@ export const footerColumns: FooterColumn[] = [
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Privacy Policy", href: "#privacy" },
-      { label: "Terms of Service", href: "#terms" },
-      { label: "Shipping Info", href: "#shipping" },
-      { label: "Store Locator", href: "#contact" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms-and-conditions" },
+      { label: "Shipping Info", href: "/shipping-policy" },
+      { label: "Store Locator", href: "/contact" },
     ],
   },
 ]

@@ -295,6 +295,14 @@ function TrafficPanel({ traffic }: { traffic: DashboardAnalytics["traffic"] }) {
   }
 
   const maxSessions = Math.max(...traffic.series.map((point) => point.sessions), 1)
+  const sessionPoints = buildChartPoints(traffic.series.map((point) => point.sessions), 560, 220, 22)
+  const pageViewPoints = buildChartPoints(traffic.series.map((point) => point.pageViews), 560, 220, 22)
+  const sessionPath = sessionPoints
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`)
+    .join(" ")
+  const pageViewPath = pageViewPoints
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`)
+    .join(" ")
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
@@ -310,19 +318,48 @@ function TrafficPanel({ traffic }: { traffic: DashboardAnalytics["traffic"] }) {
           </div>
         </div>
 
-        <div className="mt-5 flex h-44 items-end gap-2 rounded-2xl bg-surface px-3 pb-3 pt-6">
-          {traffic.series.map((point, index) => (
-            <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
-              <div
-                className="w-full rounded-t-xl"
-                style={{
-                  height: `${Math.max((point.sessions / maxSessions) * 100, 10)}%`,
-                  backgroundColor: `var(--chart-${(index % 5) + 1})`,
-                }}
+        <div className="mt-5 rounded-2xl bg-surface p-4">
+          <svg viewBox="0 0 560 220" className="h-56 w-full">
+            {[0, 1, 2, 3].map((index) => (
+              <line
+                key={index}
+                x1="22"
+                x2="538"
+                y1={22 + index * 58}
+                y2={22 + index * 58}
+                stroke="var(--border)"
+                strokeDasharray="4 6"
               />
-              <span className="text-[10px] uppercase tracking-wider text-content-secondary">{point.date.slice(5)}</span>
-            </div>
-          ))}
+            ))}
+            <path d={pageViewPath} fill="none" stroke="var(--chart-2)" strokeWidth="2.5" strokeDasharray="5 7" />
+            <path d={sessionPath} fill="none" stroke="var(--chart-1)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+            {sessionPoints.map((point) => (
+              <circle key={`session-${point.x}-${point.y}`} cx={point.x} cy={point.y} r="4.5" fill="var(--chart-1)" />
+            ))}
+            {pageViewPoints.map((point) => (
+              <circle key={`page-${point.x}-${point.y}`} cx={point.x} cy={point.y} r="3.5" fill="var(--chart-2)" />
+            ))}
+          </svg>
+
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-content-secondary">
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2 rounded-full bg-[var(--chart-1)]" />
+              Sessions
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2 rounded-full bg-[var(--chart-2)]" />
+              Page views
+            </span>
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-content-secondary sm:grid-cols-7">
+            {traffic.series.map((point, index) => (
+              <div key={point.date} className="text-center">
+                <p className="font-medium text-foreground">{point.sessions}</p>
+                <p>{traffic.series[index]?.date.slice(5)}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

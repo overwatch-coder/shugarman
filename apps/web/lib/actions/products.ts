@@ -1,6 +1,7 @@
 "use server"
 
 import { adminDb } from "@/lib/firebase-admin"
+import { normalizeProductDoc } from "@/lib/product-doc-normalizer"
 import type { ProductDoc } from "@/lib/schemas"
 
 const COLLECTION = "products"
@@ -8,7 +9,7 @@ const COLLECTION = "products"
 export async function getProducts(): Promise<ProductDoc[]> {
   try {
     const snap = await adminDb.collection(COLLECTION).orderBy("updatedAt", "desc").get()
-    return snap.docs.map((doc) => ({ slug: doc.id, ...doc.data() } as ProductDoc))
+    return snap.docs.map((doc) => normalizeProductDoc(doc.id, doc.data() as Partial<ProductDoc>))
   } catch {
     return []
   }
@@ -18,7 +19,7 @@ export async function getProduct(slug: string): Promise<ProductDoc | null> {
   try {
     const doc = await adminDb.collection(COLLECTION).doc(slug).get()
     if (!doc.exists) return null
-    return { slug: doc.id, ...doc.data() } as ProductDoc
+    return normalizeProductDoc(doc.id, doc.data() as Partial<ProductDoc>)
   } catch {
     return null
   }
@@ -27,34 +28,35 @@ export async function getProduct(slug: string): Promise<ProductDoc | null> {
 export async function saveProduct(data: ProductDoc): Promise<{ success: boolean; error?: string }> {
   try {
     const now = new Date().toISOString()
-    const existing = await adminDb.collection(COLLECTION).doc(data.slug).get()
+    const normalizedData = normalizeProductDoc(data.slug, data)
+    const existing = await adminDb.collection(COLLECTION).doc(normalizedData.slug).get()
 
     const doc: Omit<ProductDoc, "slug"> & { updatedAt: string; createdAt: string } = {
-      name: data.name,
-      brand: data.brand,
-      price: data.price,
-      currency: data.currency || "GHC",
-      condition: data.condition,
-      subtitle: data.subtitle,
-      category: data.category || "smartphones",
-      image: data.image,
-      imageAlt: data.imageAlt,
-      badge: data.badge || undefined,
-      inStock: data.inStock ?? true,
-      featured: data.featured ?? false,
-      rating: data.rating || 0,
-      reviewCount: data.reviewCount || 0,
-      colors: data.colors || [],
-      storageOptions: data.storageOptions || [],
-      images: data.images || [],
-      specs: data.specs || [],
-      installment: data.installment || null,
-      relatedSlugs: data.relatedSlugs || [],
+      name: normalizedData.name,
+      brand: normalizedData.brand,
+      price: normalizedData.price,
+      currency: normalizedData.currency || "GHC",
+      condition: normalizedData.condition,
+      subtitle: normalizedData.subtitle,
+      category: normalizedData.category || "smartphones",
+      image: normalizedData.image,
+      imageAlt: normalizedData.imageAlt,
+      badge: normalizedData.badge || undefined,
+      inStock: normalizedData.inStock,
+      featured: normalizedData.featured,
+      rating: normalizedData.rating,
+      reviewCount: normalizedData.reviewCount,
+      colors: normalizedData.colors,
+      storageOptions: normalizedData.storageOptions,
+      images: normalizedData.images,
+      specs: normalizedData.specs,
+      installment: normalizedData.installment,
+      relatedSlugs: normalizedData.relatedSlugs,
       createdAt: existing.exists ? (existing.data()?.createdAt ?? now) : now,
       updatedAt: now,
     }
 
-    await adminDb.collection(COLLECTION).doc(data.slug).set(doc)
+    await adminDb.collection(COLLECTION).doc(normalizedData.slug).set(doc)
     return { success: true }
   } catch (err) {
     console.error("saveProduct:", err)
