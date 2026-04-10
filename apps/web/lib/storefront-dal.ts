@@ -6,13 +6,15 @@
    ========================================================================== */
 
 import { adminDb } from "@/lib/firebase-admin"
+import { normalizeHomeCategories, normalizeHomeCategoriesHeading, type HomeCategoriesHeading } from "@/lib/home-content"
 import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
-import type { ProductDoc, StoreSettingsDoc } from "@/lib/schemas"
+import type { HomeContentDoc, ProductDoc, StoreSettingsDoc } from "@/lib/schemas"
 import type { ProductCard, ProductDetail, StoreMetadata } from "./storefront-types"
 import {
   products as mockProducts,
   productDetails as mockProductDetails,
   storeMetadata as mockStoreMetadata,
+  homeCategoriesHeading as defaultHomeCategoriesHeading,
   homeCategories as mockHomeCategories,
   trustPoints as mockTrustPoints,
   featuredBrands as mockFeaturedBrands,
@@ -60,6 +62,8 @@ function settingsToMetadata(doc: StoreSettingsDoc): StoreMetadata {
     name: doc.name,
     tagline: doc.tagline,
     description: doc.description,
+    heroImage: doc.heroImage,
+    heroImageAlt: doc.heroImageAlt,
     phone: doc.phone,
     whatsapp: doc.whatsapp,
     email: doc.email,
@@ -123,8 +127,24 @@ export async function getStorefrontMetadata(): Promise<StoreMetadata> {
 
 // ─── Home Content ─────────────────────────────────────────────────────────────
 
+async function getHomeContentDoc(): Promise<HomeContentDoc | null> {
+  try {
+    const doc = await adminDb.doc("content/home").get()
+    if (!doc.exists) return null
+    return doc.data() as HomeContentDoc
+  } catch {
+    return null
+  }
+}
+
+export async function getHomeCategoriesHeading(): Promise<HomeCategoriesHeading> {
+  const homeContent = await getHomeContentDoc()
+  return normalizeHomeCategoriesHeading(homeContent?.categoriesHeading, defaultHomeCategoriesHeading)
+}
+
 export async function getHomeCategories() {
-  return mockHomeCategories
+  const homeContent = await getHomeContentDoc()
+  return normalizeHomeCategories(homeContent?.categories, mockHomeCategories)
 }
 
 export async function getTrustPoints() {

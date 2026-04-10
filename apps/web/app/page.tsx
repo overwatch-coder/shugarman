@@ -10,6 +10,7 @@ import { StoreShell } from "@/components/storefront/store-shell"
 import {
   getStorefrontProducts,
   getHomeCategories,
+  getHomeCategoriesHeading,
   getTrustPoints,
   getStorefrontMetadata,
 } from "@/lib/storefront-dal"
@@ -23,8 +24,9 @@ const iconMap = {
 } as const
 
 export default async function Page() {
-  const [allProducts, homeCategories, trustPoints, storeMetadata] = await Promise.all([
+  const [allProducts, categoriesHeading, homeCategories, trustPoints, storeMetadata] = await Promise.all([
     getStorefrontProducts(),
+    getHomeCategoriesHeading(),
     getHomeCategories(),
     getTrustPoints(),
     getStorefrontMetadata(),
@@ -63,8 +65,8 @@ export default async function Page() {
         <div className="relative flex items-center justify-center">
           <div className="absolute h-[110%] w-[110%] bg-[radial-gradient(circle_at_center,var(--sf-red-glow)_0%,transparent_70%)]" />
           <Image
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7pROFDzY9XpjUPkznTAy_FhH0rJcNtzDOJ3hSTIo2fAusCZ6vB6nwQhTomvgfOB2xjQof67F0NzGAfdow9pSLobsG0GtdNrWzYIKh5i7fondpmFll6JEJNr765kWXmJsSvHiEPZIIIhtLy1NCWdtRTVchMtstPFZPjpJe6DLZWE9nadMcAYQ1_QmZCK7i-dqh6nX8tHvptZ2AuMcx4T0YIgpQiD_EKDElX9zseTGDueNLNQbk875YeZAHRssw0R58Xih-xIGXToE"
-            alt="Featured iPhone hero product render"
+            src={storeMetadata.heroImage}
+            alt={storeMetadata.heroImageAlt}
             width={520}
             height={520}
             className="relative z-10 h-auto w-full max-w-md -rotate-[8deg] drop-shadow-[0_20px_60px_rgba(232,25,44,0.25)] transition-transform duration-700 hover:-rotate-[2deg]"
@@ -75,7 +77,7 @@ export default async function Page() {
       <BrandTicker />
 
       <MotionSection className="px-6 py-24 lg:px-8" delay={0.04}>
-        <SectionHeading title="Explore the" accent="Ecosystem" className="mb-12" />
+        <SectionHeading title={categoriesHeading.title} accent={categoriesHeading.accent} className="mb-12" />
         <MotionList className="grid min-h-[640px] grid-cols-1 gap-6 md:grid-cols-4 md:grid-rows-2">
           {homeCategories.map((category) => {
             const Icon = category.icon ? iconMap[category.icon as keyof typeof iconMap] : null

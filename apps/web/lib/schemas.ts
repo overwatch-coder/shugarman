@@ -191,6 +191,8 @@ export interface StoreSettingsDoc {
   name: string
   tagline: string
   description: string
+  heroImage: string
+  heroImageAlt: string
   phone: string
   whatsapp: string
   email: string
@@ -278,6 +280,11 @@ export interface HeroBannerDoc {
   active: boolean
 }
 
+export interface HomeCategoriesHeadingDoc {
+  title: string
+  accent: string
+}
+
 export interface BentoCategoryDoc {
   title: string
   subtitle?: string
@@ -299,6 +306,7 @@ export interface TrustPointDoc {
 /** Firestore: /content/home */
 export interface HomeContentDoc {
   hero: HeroBannerDoc
+  categoriesHeading?: HomeCategoriesHeadingDoc
   categories: BentoCategoryDoc[]
   trustPoints: TrustPointDoc[]
 }

@@ -2,39 +2,44 @@
 
 import { randomUUID } from "node:crypto"
 
-import { adminDb } from "@/lib/firebase-admin"
-import { adminStorage } from "@/lib/firebase-admin"
-import type { StoreSettingsDoc } from "@/lib/schemas"
+import { adminDb, adminStorage } from "@/lib/firebase-admin"
+import type { BentoCategoryDoc, HomeCategoriesHeadingDoc, HomeContentDoc } from "@/lib/schemas"
 
-const DOC_PATH = "settings/store"
+const DOC_PATH = "content/home"
 
 function buildFirebaseDownloadUrl(bucketName: string, objectPath: string, token: string) {
   return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`
 }
 
-export async function getStoreSettings(): Promise<StoreSettingsDoc | null> {
+export async function getAdminHomeContent(): Promise<Pick<HomeContentDoc, "categoriesHeading" | "categories"> | null> {
   try {
     const doc = await adminDb.doc(DOC_PATH).get()
     if (!doc.exists) return null
-    return doc.data() as StoreSettingsDoc
+
+    const data = doc.data() as Partial<HomeContentDoc>
+    return {
+      categoriesHeading: data.categoriesHeading,
+      categories: data.categories ?? [],
+    }
   } catch {
     return null
   }
 }
 
-export async function saveStoreSettings(
-  data: StoreSettingsDoc
-): Promise<{ success: boolean; error?: string }> {
+export async function saveHomeContent(data: {
+  categoriesHeading: HomeCategoriesHeadingDoc
+  categories: BentoCategoryDoc[]
+}): Promise<{ success: boolean; error?: string }> {
   try {
     await adminDb.doc(DOC_PATH).set(data, { merge: true })
     return { success: true }
   } catch (err) {
-    console.error("saveStoreSettings:", err)
-    return { success: false, error: "Failed to save settings" }
+    console.error("saveHomeContent:", err)
+    return { success: false, error: "Failed to save home content" }
   }
 }
 
-export async function importStoreHeroImageFromUrl(imageUrl: string): Promise<{
+export async function importHomeCategoryImageFromUrl(imageUrl: string): Promise<{
   success: boolean
   url?: string
   error?: string
@@ -58,7 +63,7 @@ export async function importStoreHeroImageFromUrl(imageUrl: string): Promise<{
     const extension = contentType.split("/")[1]?.split(";")[0]?.trim() || "jpg"
     const arrayBuffer = await response.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-    const objectPath = `storefront/hero/${Date.now()}-${randomUUID()}.${extension}`
+    const objectPath = `storefront/home-categories/${Date.now()}-${randomUUID()}.${extension}`
     const token = randomUUID()
     const bucket = adminStorage.bucket()
 
@@ -78,7 +83,7 @@ export async function importStoreHeroImageFromUrl(imageUrl: string): Promise<{
       url: buildFirebaseDownloadUrl(bucket.name, objectPath, token),
     }
   } catch (err) {
-    console.error("importStoreHeroImageFromUrl:", err)
+    console.error("importHomeCategoryImageFromUrl:", err)
     return { success: false, error: "Failed to import the image into Firebase storage" }
   }
 }

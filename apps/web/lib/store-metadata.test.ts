@@ -8,6 +8,8 @@ const defaults: StoreMetadata = {
   name: "SHUGARMAN iSTORE",
   tagline: "Every Phone. Every Price. Every Person.",
   description: "Default store description",
+  heroImage: "https://firebasestorage.googleapis.com/v0/b/example/o/default-hero.png?alt=media",
+  heroImageAlt: "Default storefront hero phone render",
   phone: "0558694853",
   whatsapp: "233558694853",
   email: "store@example.com",
@@ -51,4 +53,30 @@ test("mergeStoreMetadataWithDefaults preserves configured hours when present", (
   )
 
   assert.deepEqual(merged.hours, customHours)
+})
+
+test("mergeStoreMetadataWithDefaults falls back to default hero image when settings hero is empty", () => {
+  const merged = mergeStoreMetadataWithDefaults(
+    {
+      heroImage: "",
+      heroImageAlt: "",
+    },
+    defaults
+  )
+
+  assert.equal(merged.heroImage, defaults.heroImage)
+  assert.equal(merged.heroImageAlt, defaults.heroImageAlt)
+})
+
+test("mergeStoreMetadataWithDefaults preserves configured hero image and alt text", () => {
+  const merged = mergeStoreMetadataWithDefaults(
+    {
+      heroImage: "https://firebasestorage.googleapis.com/v0/b/example/o/hero.png?alt=media",
+      heroImageAlt: "A refreshed storefront campaign device image",
+    },
+    defaults
+  )
+
+  assert.equal(merged.heroImage, "https://firebasestorage.googleapis.com/v0/b/example/o/hero.png?alt=media")
+  assert.equal(merged.heroImageAlt, "A refreshed storefront campaign device image")
 })

@@ -7,6 +7,8 @@ export function mergeStoreMetadataWithDefaults(
   return {
     ...defaults,
     ...metadata,
+    heroImage: metadata.heroImage?.trim() ? metadata.heroImage : defaults.heroImage,
+    heroImageAlt: metadata.heroImageAlt?.trim() ? metadata.heroImageAlt : defaults.heroImageAlt,
     hours: metadata.hours?.length ? metadata.hours : defaults.hours,
     social: metadata.social?.length ? metadata.social : defaults.social,
   }

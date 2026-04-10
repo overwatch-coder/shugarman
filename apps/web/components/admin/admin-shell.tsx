@@ -48,6 +48,7 @@ const navItems = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/contacts", label: "Contacts", icon: MessageSquareMore },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
+  { href: "/admin/home-content", label: "Home Content", icon: Store },
   { href: "/admin/settings", label: "Store Settings", icon: Settings },
 ]
 
@@ -79,6 +80,7 @@ function getDefaultPageTitle(pathname: string) {
   if (pathname === "/admin/orders") return "Orders"
   if (pathname === "/admin/contacts") return "Contacts"
   if (pathname === "/admin/notifications") return "Notifications"
+  if (pathname === "/admin/home-content") return "Home Content"
   if (pathname === "/admin/settings") return "Store Settings"
 
   return getActiveNavLabel(pathname)

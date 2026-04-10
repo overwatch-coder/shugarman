@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Heart, Menu, Search, ShoppingCart, UserRound } from "lucide-react"
+import { ArrowRight, Heart, Menu, Search, ShoppingCart, UserRound } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 import {
@@ -152,13 +152,13 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
       </div>
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="top-20 max-w-2xl rounded-3xl border border-border bg-background p-0">
+        <DialogContent className="max-w-3xl rounded-[28px] border border-border bg-background p-0 sm:max-w-3xl">
           <DialogHeader className="border-b border-border px-6 py-5">
-            <DialogTitle className="text-base font-black uppercase tracking-[0.16em] text-foreground">
+            <DialogTitle className="pr-10 text-base font-black uppercase tracking-[0.16em] text-foreground">
               Search the Catalog
             </DialogTitle>
             <DialogDescription>
-              Search products by name, brand, or product line, then jump to the shop or a matching device.
+              Search by product name, brand, or product line and jump straight into the matching result.
             </DialogDescription>
           </DialogHeader>
 
@@ -168,69 +168,109 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
                 event.preventDefault()
                 submitSearch()
               }}
-              className="flex flex-col gap-3 sm:flex-row"
+              className="space-y-4"
             >
-              <input
-                autoFocus
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search iPhone, Samsung, tablets, accessories..."
-                className="min-h-12 flex-1 rounded-2xl border border-border bg-surface px-4 text-base text-foreground outline-none placeholder:text-content-muted focus:border-primary/60"
-              />
-              <button
-                type="submit"
-                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-black uppercase tracking-[0.16em] text-white"
-              >
-                Search Shop
-              </button>
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-content-secondary" />
+                <input
+                  autoFocus
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search iPhone, Samsung, tablets, accessories..."
+                  className="min-h-14 w-full rounded-2xl border border-border bg-surface pl-11 pr-28 text-base text-foreground outline-none placeholder:text-content-muted focus:border-primary/60"
+                />
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded-full border border-border bg-background px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-content-secondary">
+                  Enter
+                </span>
+              </label>
+
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-content-secondary">
+                  {searchTerm.trim()
+                    ? "Choose a suggestion or press Enter to open the full catalog results."
+                    : "Start typing to see instant matches from the storefront catalog."}
+                </p>
+                <button
+                  type="submit"
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-black uppercase tracking-[0.16em] text-white"
+                >
+                  Search Shop
+                  <ArrowRight className="size-4" />
+                </button>
+              </div>
             </form>
 
-            {searchTerm.trim() ? (
-              <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between gap-3">
+            <div className="mt-5 rounded-2xl border border-border bg-card/70 p-3">
+              {searchTerm.trim() ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3 px-2 pt-1">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-content-secondary">
+                      Live Matches
+                    </p>
+                    <button
+                      type="button"
+                      onClick={submitSearch}
+                      className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary hover:underline"
+                    >
+                      View all results
+                    </button>
+                  </div>
+
+                  {suggestions.length > 0 ? (
+                    <div className="space-y-2">
+                      {suggestions.map((product) => (
+                        <button
+                          key={product.slug}
+                          type="button"
+                          onClick={() => {
+                            setSearchOpen(false)
+                            router.push(`/shop/${product.slug}`)
+                          }}
+                          className="flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent bg-background px-4 py-3 text-left transition-colors hover:border-primary/20 hover:bg-accent/30"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-foreground">{product.name}</p>
+                            <p className="mt-1 truncate text-xs text-content-secondary">
+                              {product.brand} · {product.subtitle}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="font-mono text-xs font-bold text-primary">
+                              {product.currency} {product.price.toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-content-secondary">
+                              Open product
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-background px-4 py-6 text-sm text-content-secondary">
+                      No instant matches yet. Press Enter to open the shop and search more broadly.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3 px-2 py-2">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-content-secondary">
                     Suggestions
                   </p>
-                  <button
-                    type="button"
-                    onClick={submitSearch}
-                    className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary hover:underline"
-                  >
-                    View all results
-                  </button>
-                </div>
-
-                {suggestions.length > 0 ? (
-                  <div className="space-y-2">
-                    {suggestions.map((product) => (
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {["iPhone 15", "Samsung Galaxy", "Refurbished"].map((term) => (
                       <button
-                        key={product.slug}
+                        key={term}
                         type="button"
-                        onClick={() => {
-                          setSearchOpen(false)
-                          router.push(`/shop/${product.slug}`)
-                        }}
-                        className="flex w-full items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent/40"
+                        onClick={() => setSearchTerm(term)}
+                        className="rounded-2xl border border-border bg-background px-4 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-accent/30"
                       >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-foreground">{product.name}</p>
-                          <p className="mt-1 truncate text-xs text-content-secondary">
-                            {product.brand} · {product.subtitle}
-                          </p>
-                        </div>
-                        <p className="shrink-0 font-mono text-xs font-bold text-primary">
-                          {product.currency} {product.price.toLocaleString()}
-                        </p>
+                        {term}
                       </button>
                     ))}
                   </div>
-                ) : (
-                  <div className="rounded-2xl border border-border bg-card px-4 py-5 text-sm text-content-secondary">
-                    No instant matches yet. Submit the term to open the filtered shop view.
-                  </div>
-                )}
-              </div>
-            ) : null}
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

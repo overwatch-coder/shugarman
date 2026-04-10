@@ -6,6 +6,8 @@ export interface StoreMetadata {
   name: string;
   tagline: string;
   description: string;
+  heroImage: string;
+  heroImageAlt: string;
   phone: string;
   whatsapp: string;
   email: string;

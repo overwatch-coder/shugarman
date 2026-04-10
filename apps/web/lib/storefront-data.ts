@@ -15,12 +15,16 @@ import type {
   TrustPoint,
 } from "./storefront-types"
 import { BRAND_NAME } from "./brand"
+import type { HomeCategoriesHeading } from "./home-content"
 
 export const storeMetadata: StoreMetadata = {
   name: BRAND_NAME,
   tagline: "Every Phone. Every Price. Every Person.",
   description:
     "Premium smartphone retail, accessories, and device support in the heart of Kumasi with flexible installment options.",
+  heroImage:
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuC7pROFDzY9XpjUPkznTAy_FhH0rJcNtzDOJ3hSTIo2fAusCZ6vB6nwQhTomvgfOB2xjQof67F0NzGAfdow9pSLobsG0GtdNrWzYIKh5i7fondpmFll6JEJNr765kWXmJsSvHiEPZIIIhtLy1NCWdtRTVchMtstPFZPjpJe6DLZWE9nadMcAYQ1_QmZCK7i-dqh6nX8tHvptZ2AuMcx4T0YIgpQiD_EKDElX9zseTGDueNLNQbk875YeZAHRssw0R58Xih-xIGXToE",
+  heroImageAlt: "Featured iPhone hero product render",
   phone: "0558694853",
   whatsapp: "233558694853",
   email: "fosuemmanuel2001@gmail.com",
@@ -78,6 +82,11 @@ export const featuredBrands: Brand[] = [
   { name: "Tecno", slug: "tecno" },
   { name: "Infinix", slug: "infinix" },
 ]
+
+export const homeCategoriesHeading: HomeCategoriesHeading = {
+  title: "Explore the",
+  accent: "Ecosystem",
+}
 
 export const homeCategories: BentoCategory[] = [
   {
