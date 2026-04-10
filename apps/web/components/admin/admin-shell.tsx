@@ -133,7 +133,6 @@ export function AdminShell({
     initialNotifications,
     6
   )
-  const activeSectionLabel = getActiveNavLabel(pathname)
   const pageTitle = pageTitleOverride ?? getDefaultPageTitle(pathname)
 
   useEffect(() => {
@@ -201,13 +200,15 @@ export function AdminShell({
     <div className="flex h-full flex-col bg-card/95">
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4">
         <BrandMark
-          className="min-w-0"
+          className="shrink-0"
           iconClassName="size-8 rounded-lg"
-          textClassName={collapsed ? "hidden" : "truncate text-sm text-foreground"}
+          textClassName="hidden"
         />
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-wider text-content-secondary">Admin</p>
+            <p className="truncate text-sm font-semibold uppercase tracking-[0.18em] text-foreground">
+              Admin
+            </p>
           </div>
         )}
       </div>
@@ -302,9 +303,6 @@ export function AdminShell({
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">{pageTitle}</p>
-            <p className="truncate text-[10px] uppercase tracking-wider text-content-secondary">
-              {activeSectionLabel}
-            </p>
           </div>
 
           <button

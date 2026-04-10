@@ -3,6 +3,7 @@
 import nodemailer from "nodemailer"
 
 import { getSession } from "@/lib/admin-auth"
+import { buildContactNotification } from "@/lib/contact-notifications"
 import { adminDb } from "@/lib/firebase-admin"
 import type { ContactInquiryType, ContactMessageDoc, ContactReplyDoc } from "@/lib/schemas"
 
@@ -63,7 +64,10 @@ export async function createContactMessage(data: {
   try {
     const now = new Date().toISOString()
     const ref = adminDb.collection(COLLECTION).doc()
-    await ref.set({
+    const notificationRef = adminDb.collection("notifications").doc()
+    const batch = adminDb.batch()
+
+    batch.set(ref, {
       name: data.name,
       email: data.email,
       phone: data.phone,
@@ -75,6 +79,10 @@ export async function createContactMessage(data: {
       createdAt: now,
       updatedAt: now,
     })
+
+    batch.set(notificationRef, buildContactNotification(data, ref.id, now))
+
+    await batch.commit()
     return { success: true as const, id: ref.id }
   } catch (err) {
     console.error("createContactMessage:", err)

@@ -221,6 +221,7 @@ export type NotificationLevel = "info" | "warning" | "error" | "success"
 
 export type NotificationEvent =
   | "new_order"
+  | "new_contact"
   | "low_stock"
   | "catalog_change"
   | "settings_change"
@@ -236,7 +237,7 @@ export interface NotificationDoc {
   read: boolean
   /** slug, orderId, etc. — identifies the related resource */
   resourceSlug?: string
-  resourceType?: "product" | "order" | "brand" | "category" | "settings"
+  resourceType?: "product" | "order" | "brand" | "category" | "settings" | "contact"
   createdAt: string
 }
 

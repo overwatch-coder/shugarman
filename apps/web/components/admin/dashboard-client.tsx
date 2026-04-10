@@ -288,7 +288,7 @@ function TrafficPanel({ traffic }: { traffic: DashboardAnalytics["traffic"] }) {
         <Activity className="size-8 text-content-muted" />
         <p className="mt-4 text-sm font-medium text-foreground">Website traffic tracking is not connected yet.</p>
         <p className="mt-2 max-w-sm text-sm text-content-secondary">
-          Connect Firebase Analytics or a daily traffic feed to populate visits, page views, and audience trends here.
+          This dashboard fills from the storefront traffic feed in Firestore. Visit the public site after deployment and make sure the server-side Firebase Admin connection can write analytics documents.
         </p>
       </div>
     )

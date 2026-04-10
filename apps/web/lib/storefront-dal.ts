@@ -6,6 +6,7 @@
    ========================================================================== */
 
 import { adminDb } from "@/lib/firebase-admin"
+import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
 import type { ProductDoc, StoreSettingsDoc } from "@/lib/schemas"
 import type { ProductCard, ProductDetail, StoreMetadata } from "./storefront-types"
 import {
@@ -55,7 +56,7 @@ function docToDetail(doc: ProductDoc, relatedCards: ProductCard[]): ProductDetai
 }
 
 function settingsToMetadata(doc: StoreSettingsDoc): StoreMetadata {
-  return {
+  return mergeStoreMetadataWithDefaults({
     name: doc.name,
     tagline: doc.tagline,
     description: doc.description,
@@ -68,7 +69,7 @@ function settingsToMetadata(doc: StoreSettingsDoc): StoreMetadata {
     country: doc.country,
     hours: doc.hours,
     social: doc.social,
-  }
+  }, mockStoreMetadata)
 }
 
 // ─── Products ─────────────────────────────────────────────────────────────────

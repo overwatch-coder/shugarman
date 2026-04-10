@@ -92,14 +92,17 @@ export async function StoreFooter() {
 
         <div>
           <h4 className="font-label mb-6 text-xs font-black uppercase tracking-[0.2em] text-white">
-            Support
+            Opening Hours
           </h4>
           <div className="space-y-2 font-mono text-xs text-white/65">
             {groupHours(storeMetadata.hours).map((line) => (
               <p key={line}>{line}</p>
             ))}
           </div>
-          <div className="mt-6 space-y-2 text-sm text-white/55">
+          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/35">
+            Contact
+          </p>
+          <div className="mt-3 space-y-2 text-sm text-white/55">
             <p>{storeMetadata.phone}</p>
             <p>{storeMetadata.email}</p>
             <p>

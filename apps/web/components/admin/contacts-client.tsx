@@ -188,7 +188,7 @@ export function ContactsClient({
       </div>
 
       <Dialog open={!!selectedContact} onOpenChange={(open) => !open && setSelectedContactId(null)}>
-        <DialogContent className="max-h-[90dvh] max-w-3xl overflow-y-auto rounded-2xl border border-border bg-card p-0">
+        <DialogContent className="max-h-[90dvh] !max-w-3xl overflow-y-auto rounded-2xl border border-border bg-card p-0">
           {selectedContact ? (
             <>
               <DialogHeader className="border-b border-border px-6 py-5">
@@ -268,7 +268,7 @@ export function ContactsClient({
               </div>
 
               <DialogFooter className="border-t border-border bg-card px-6 py-4 sm:justify-between">
-                <div className="text-xs text-content-secondary">
+                <div className="text-xs text-content-secondary hidden">
                   Use real email when SMTP is configured, or open a prefilled draft in your mail app.
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -288,7 +288,7 @@ export function ContactsClient({
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
                     <Mail className="size-4" />
-                    Send Real Email
+                    Send From Here
                   </button>
                 </div>
               </DialogFooter>

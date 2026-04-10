@@ -52,7 +52,7 @@ export default async function Page() {
               Shop Now
             </Link>
             <Link
-              href="/shop/iphone-15"
+              href="/about"
               className="inline-flex items-center justify-center rounded-md border border-black/10 px-8 py-4 text-sm font-bold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
             >
               Learn More
