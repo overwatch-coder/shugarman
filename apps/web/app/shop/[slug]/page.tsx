@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { ProductDetailPageClient } from "@/components/storefront/product-detail-page-client"
 import { StoreShell } from "@/components/storefront/store-shell"
-import { getStorefrontProductDetail } from "@/lib/storefront-dal"
+import { getApprovedReviewsForProduct, getStorefrontProductDetail } from "@/lib/storefront-dal"
 
 export default async function ProductPage({
   params,
@@ -10,7 +10,10 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = await getStorefrontProductDetail(slug)
+  const [product, reviews] = await Promise.all([
+    getStorefrontProductDetail(slug),
+    getApprovedReviewsForProduct(slug),
+  ])
 
   if (!product) {
     notFound()
@@ -18,7 +21,7 @@ export default async function ProductPage({
 
   return (
     <StoreShell>
-      <ProductDetailPageClient product={product} />
+      <ProductDetailPageClient product={product} reviews={reviews} />
     </StoreShell>
   )
 }

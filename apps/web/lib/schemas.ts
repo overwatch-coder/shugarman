@@ -243,6 +243,33 @@ export interface NotificationDoc {
   createdAt: string
 }
 
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export type ReviewStatus = "pending" | "approved" | "rejected"
+
+/**
+ * Firestore: /reviews/{reviewId}
+ * Linked to a product via `productSlug`.
+ */
+export interface ReviewDoc {
+  id: string
+  /** Foreign key — matches /products/{slug} */
+  productSlug: string
+  productName: string
+  /** Display name the reviewer provided */
+  reviewerName: string
+  /** Optional email — stored but never exposed publicly */
+  reviewerEmail: string
+  rating: number          // 1–5
+  title: string
+  body: string
+  status: ReviewStatus
+  /** Admin-only note, never shown on storefront */
+  adminNote?: string
+  createdAt: string       // ISO timestamp
+  updatedAt: string       // ISO timestamp
+}
+
 /** Firestore: /analyticsDaily/{yyyy-mm-dd} */
 export interface AnalyticsDailyDoc {
   date: string

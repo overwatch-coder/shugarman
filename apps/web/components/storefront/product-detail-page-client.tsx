@@ -19,16 +19,24 @@ import type { ProductDetail } from "@/lib/storefront-types"
 import { getLinkedImageForColor } from "@/lib/product-color-links"
 import { hasInstallmentPlan, isExternalImageSource } from "@/lib/storefront-product-helpers"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import type { ReviewDoc } from "@/lib/schemas"
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { useCart } from "./cart-provider"
 import { QuantityStepper } from "./quantity-stepper"
 import { ProductCard } from "./product-card"
+import ProductReviews from "./product-reviews"
 
 function formatPrice(value: number, currency: string) {
   return `${currency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function ProductDetailPageClient({ product }: { product: ProductDetail }) {
+export function ProductDetailPageClient({
+  product,
+  reviews = [],
+}: {
+  product: ProductDetail
+  reviews?: ReviewDoc[]
+}) {
   const displayableColors = getDisplayableColors(product.colors)
   const displayableStorageOptions = getDisplayableStorageOptions(product.storageOptions)
   const displayableSpecs = getDisplayableSpecs(product.specs)
@@ -389,6 +397,15 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
             <ProductCard key={relatedProduct.slug} product={relatedProduct} showCartAction={false} />
           ))}
         </MotionList>
+      </MotionSection>
+
+      {/* Customer Reviews */}
+      <MotionSection className="mt-16" delay={0.1}>
+        <ProductReviews
+          productSlug={product.slug}
+          productName={product.name}
+          initialReviews={reviews}
+        />
       </MotionSection>
     </MotionPage>
   )

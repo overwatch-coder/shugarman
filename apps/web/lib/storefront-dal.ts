@@ -8,7 +8,7 @@
 import { adminDb } from "@/lib/firebase-admin"
 import { normalizeHomeCategories, normalizeHomeCategoriesHeading, type HomeCategoriesHeading } from "@/lib/home-content"
 import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
-import type { HomeContentDoc, ProductDoc, StoreSettingsDoc } from "@/lib/schemas"
+import type { HomeContentDoc, ProductDoc, StoreSettingsDoc, ReviewDoc } from "@/lib/schemas"
 import type { ProductCard, ProductDetail, StoreMetadata } from "./storefront-types"
 import {
   products as mockProducts,
@@ -110,6 +110,25 @@ export async function getStorefrontProductDetail(
     return docToDetail(data, related)
   } catch {
     return mockProductDetails[slug] ?? null
+  }
+}
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+/** Returns only approved reviews for a product, newest first — safe for public display. */
+export async function getApprovedReviewsForProduct(
+  productSlug: string
+): Promise<ReviewDoc[]> {
+  try {
+    const snap = await adminDb
+      .collection("reviews")
+      .where("productSlug", "==", productSlug)
+      .where("status", "==", "approved")
+      .orderBy("createdAt", "desc")
+      .get()
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ReviewDoc))
+  } catch {
+    return []
   }
 }
 
