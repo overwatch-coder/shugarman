@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
-import { parseCreateAdminOptions } from "./options"
+import { parseCreateAdminOptions } from "@/scripts/lib/admin/options"
 
 test("parseCreateAdminOptions requires a password", () => {
   assert.throws(() => parseCreateAdminOptions([]), /Missing required flag: --password/)

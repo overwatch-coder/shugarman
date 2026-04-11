@@ -6,7 +6,7 @@ import {
   getNextCreateSlugState,
   selectPrimaryGalleryImage,
   toggleRelatedSlug,
-} from "./product-editor-helpers"
+} from "@/lib/admin/product-editor-helpers"
 
 test("getNextCreateSlugState auto-generates a slug until the admin customizes it", () => {
   const initial = getNextCreateSlugState({

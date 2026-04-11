@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { getStorageBucketCandidates } from "./storage-bucket"
+import { getStorageBucketCandidates } from "@/lib/storage-bucket"
 
 test("getStorageBucketCandidates prefers configured bucket and includes appspot fallback for firebasestorage domains", () => {
   const candidates = getStorageBucketCandidates({

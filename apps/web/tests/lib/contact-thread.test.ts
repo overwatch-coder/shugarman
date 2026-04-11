@@ -1,8 +1,8 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { ContactMessageDoc } from "./schemas"
-import { buildContactThread } from "./contact-thread"
+import type { ContactMessageDoc } from "@/lib/schemas"
+import { buildContactThread } from "@/lib/contact-thread"
 
 test("buildContactThread keeps the original message and sent replies in one timeline", () => {
   const contact: ContactMessageDoc = {

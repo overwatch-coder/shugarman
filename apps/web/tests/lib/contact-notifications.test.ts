@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { buildContactNotification } from "./contact-notifications"
+import { buildContactNotification } from "@/lib/contact-notifications"
 
 test("buildContactNotification creates a new contact alert for admins", () => {
   const notification = buildContactNotification(

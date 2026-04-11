@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { buildCategoryDocs, buildProductDocs } from "./mappers"
+import { buildCategoryDocs, buildProductDocs } from "@/scripts/lib/seed/mappers"
 
 test("buildCategoryDocs returns the canonical storefront categories in order", () => {
   assert.deepEqual(buildCategoryDocs(), [

@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { normalizeSocialLink } from "./settings-helpers"
+import { normalizeSocialLink } from "@/lib/admin/settings-helpers"
 
 test("normalizeSocialLink builds an Instagram URL from just a handle", () => {
   const link = normalizeSocialLink({

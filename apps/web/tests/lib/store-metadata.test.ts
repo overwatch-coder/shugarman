@@ -1,8 +1,8 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { StoreMetadata } from "./storefront-types"
-import { mergeStoreMetadataWithDefaults } from "./store-metadata"
+import type { StoreMetadata } from "@/lib/storefront-types"
+import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
 
 const defaults: StoreMetadata = {
   name: "SHUGARMAN iSTORE",

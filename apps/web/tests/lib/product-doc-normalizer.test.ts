@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { normalizeProductDoc } from "./product-doc-normalizer"
+import { normalizeProductDoc } from "@/lib/product-doc-normalizer"
 
 test("normalizeProductDoc restores missing array fields for partial product docs", () => {
   const product = normalizeProductDoc("iphone-15", {

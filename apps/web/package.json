@@ -13,7 +13,9 @@
     "create:admin": "tsx scripts/create-admin.ts",
     "rotate:admin-password": "tsx scripts/rotate-admin-password.ts",
     "seed:firestore": "tsx scripts/seed-firestore.ts",
-    "test:seed": "node --import tsx --test scripts/**/*.test.ts"
+    "test": "node --import tsx --test \"tests/**/*.test.ts\"",
+    "test:lib": "node --import tsx --test \"tests/lib/**/*.test.ts\"",
+    "test:scripts": "node --import tsx --test \"tests/scripts/**/*.test.ts\""
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

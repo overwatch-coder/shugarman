@@ -1,12 +1,12 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { BentoCategory } from "./storefront-types"
-import type { BentoCategoryDoc } from "./schemas"
+import type { BentoCategory } from "@/lib/storefront-types"
+import type { BentoCategoryDoc } from "@/lib/schemas"
 import {
   normalizeHomeCategories,
   normalizeHomeCategoriesHeading,
-} from "./home-content"
+} from "@/lib/home-content"
 
 const defaultCategories: BentoCategory[] = [
   {

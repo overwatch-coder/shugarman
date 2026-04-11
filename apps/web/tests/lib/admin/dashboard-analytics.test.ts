@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { buildDashboardAnalytics } from "./dashboard-analytics"
+import { buildDashboardAnalytics } from "@/lib/admin/dashboard-analytics"
 
 test("buildDashboardAnalytics aggregates order, revenue, status, category, and traffic series", () => {
   const analytics = buildDashboardAnalytics({

@@ -5,7 +5,7 @@ import {
   getDisplayableColors,
   getDisplayableSpecs,
   getDisplayableStorageOptions,
-} from "./product-detail-content"
+} from "@/lib/product-detail-content"
 
 test("getDisplayableColors removes empty color entries", () => {
   const colors = getDisplayableColors([

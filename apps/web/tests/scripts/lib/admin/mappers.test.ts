@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
-import { DEFAULT_ADMIN_DISPLAY_NAME, DEFAULT_ADMIN_EMAIL, buildAdminDoc } from "./mappers"
+import { DEFAULT_ADMIN_DISPLAY_NAME, DEFAULT_ADMIN_EMAIL, buildAdminDoc } from "@/scripts/lib/admin/mappers"
 
 test("buildAdminDoc creates an admin document with role admin and a first-run createdAt", () => {
   const nowIso = "2026-04-09T12:00:00.000Z"

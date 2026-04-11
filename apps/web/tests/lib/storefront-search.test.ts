@@ -1,8 +1,8 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { ProductCard } from "./storefront-types"
-import { getSearchSuggestions, matchesStorefrontQuery } from "./storefront-search"
+import type { ProductCard } from "@/lib/storefront-types"
+import { getSearchSuggestions, matchesStorefrontQuery } from "@/lib/storefront-search"
 
 const products: ProductCard[] = [
   {

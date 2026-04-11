@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { getLinkedImageForColor, setColorImageIndex } from "./product-color-links"
+import { getLinkedImageForColor, setColorImageIndex } from "@/lib/product-color-links"
 
 test("setColorImageIndex stores one selected image index for a color", () => {
   const nextColors = setColorImageIndex(

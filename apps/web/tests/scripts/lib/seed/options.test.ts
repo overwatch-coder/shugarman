@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { parseSeedOptions } from "./options.js"
+import { parseSeedOptions } from "@/scripts/lib/seed/options.js"
 
 test("parseSeedOptions enables dryRun when the flag is present", () => {
   assert.deepEqual(parseSeedOptions(["--dry-run"]), { dryRun: true })

@@ -1,8 +1,8 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { ContactMessageDoc } from "./schemas"
-import { toContactMessageFirestoreDoc } from "./contact-message-doc"
+import type { ContactMessageDoc } from "@/lib/schemas"
+import { toContactMessageFirestoreDoc } from "@/lib/contact-message-doc"
 
 test("toContactMessageFirestoreDoc omits the document id while preserving replies", () => {
   const contact: ContactMessageDoc = {

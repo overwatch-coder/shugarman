@@ -4,7 +4,7 @@ import assert from "node:assert/strict"
 import {
   hasInstallmentPlan,
   isExternalImageSource,
-} from "./storefront-product-helpers"
+} from "@/lib/storefront-product-helpers"
 
 test("hasInstallmentPlan returns false when installment data is missing", () => {
   assert.equal(hasInstallmentPlan(null), false)

@@ -1,8 +1,8 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import type { ProductCard } from "./storefront-types"
-import { getWishlistedProducts } from "./wishlist-products"
+import type { ProductCard } from "@/lib/storefront-types"
+import { getWishlistedProducts } from "@/lib/wishlist-products"
 
 const products: ProductCard[] = [
   {
