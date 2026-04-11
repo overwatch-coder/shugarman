@@ -41,3 +41,20 @@ export async function deleteCategory(
     return { success: false, error: "Failed to delete category" }
   }
 }
+
+/** Batch-update the `order` field for a list of slugs (0-based index). */
+export async function reorderCategories(
+  slugs: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const batch = adminDb.batch()
+    slugs.forEach((slug, index) => {
+      batch.update(adminDb.collection(COLLECTION).doc(slug), { order: index })
+    })
+    await batch.commit()
+    return { success: true }
+  } catch (err) {
+    console.error("reorderCategories:", err)
+    return { success: false, error: "Failed to save order" }
+  }
+}
