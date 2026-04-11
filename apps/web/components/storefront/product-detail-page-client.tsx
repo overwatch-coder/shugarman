@@ -337,11 +337,11 @@ export function ProductDetailPageClient({ product }: { product: ProductDetail })
           <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-foreground">
             Technical Specifications
           </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-6 divide-y divide-white/5">
             {displayableSpecs.map((spec) => (
-              <div key={spec.label} className="flex items-center justify-between border-b border-white/5 py-3 text-sm">
-                <span className="uppercase text-content-secondary">{spec.label}</span>
-                <span className="text-foreground">{spec.value}</span>
+              <div key={spec.label} className="flex items-baseline justify-between gap-6 py-3 text-sm">
+                <span className="shrink-0 uppercase tracking-wide text-content-secondary">{spec.label}</span>
+                <span className="text-right text-foreground">{spec.value}</span>
               </div>
             ))}
           </div>
