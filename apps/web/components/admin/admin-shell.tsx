@@ -21,6 +21,7 @@ import {
   Store,
   Sun,
   Tag,
+  UserCircle,
   X,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -52,6 +53,7 @@ const navItems = [
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/home-content", label: "Home Content", icon: Store },
   { href: "/admin/settings", label: "Store Settings", icon: Settings },
+  { href: "/admin/account", label: "My Account", icon: UserCircle },
 ]
 
 const LEVEL_STYLES: Record<NotificationDoc["level"], string> = {
@@ -84,6 +86,7 @@ function getDefaultPageTitle(pathname: string) {
   if (pathname === "/admin/notifications") return "Notifications"
   if (pathname === "/admin/home-content") return "Home Content"
   if (pathname === "/admin/settings") return "Store Settings"
+  if (pathname === "/admin/account") return "My Account"
 
   return getActiveNavLabel(pathname)
 }
@@ -243,14 +246,17 @@ export function AdminShell({
 
       <div className="shrink-0 border-t border-border p-3">
         {!collapsed && (
-          <div className="mb-3 rounded-xl border border-border bg-surface px-3 py-2.5">
+          <Link
+            href="/admin/account"
+            className="mb-3 block rounded-xl border border-border bg-surface px-3 py-2.5 transition-colors hover:bg-accent"
+          >
             <p className="truncate text-sm font-medium text-foreground">
               {admin.displayName || admin.email}
             </p>
             <p className="truncate text-[10px] uppercase tracking-wider text-content-secondary">
-              {admin.role}
+              {admin.role} · Edit profile
             </p>
-          </div>
+          </Link>
         )}
 
         <button
