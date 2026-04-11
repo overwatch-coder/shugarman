@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react"
 
@@ -33,12 +33,15 @@ const swatches = [
 
 const ITEMS_PER_PAGE = 16
 
+  const PRICE_ABSOLUTE_MAX = 50000
+
   function parseSearchParams(searchParams: URLSearchParams) {
     const selectedCategories = searchParams.getAll("category")
     const selectedBrand = searchParams.get("brand")
     const selectedCondition = searchParams.get("condition") as ProductCondition | null
     const selectedColor = searchParams.get("color")
-    const maxPrice = searchParams.get("maxPrice")
+    const minPriceParam = searchParams.get("minPrice")
+    const maxPriceParam = searchParams.get("maxPrice")
     const sort = (searchParams.get("sort") ?? "featured") as SortOption
     const page = Math.max(1, Number(searchParams.get("page") ?? "1"))
     const query = searchParams.get("q") ?? ""
@@ -48,7 +51,10 @@ const ITEMS_PER_PAGE = 16
       selectedBrand,
       selectedCondition,
       selectedColor,
-      priceRange: [0, maxPrice ? Number(maxPrice) : 15000] as [number, number],
+      priceRange: [
+        minPriceParam ? Number(minPriceParam) : 0,
+        maxPriceParam ? Number(maxPriceParam) : PRICE_ABSOLUTE_MAX,
+      ] as [number, number],
       sort,
       currentPage: page,
       query,
@@ -71,6 +77,43 @@ const ITEMS_PER_PAGE = 16
       currentPage,
       query,
     } = parseSearchParams(searchParams)
+
+    // Compute actual price ceiling from products so the slider is useful
+    const priceCeiling = useMemo(() => {
+      const max = Math.max(0, ...products.map((p) => p.price))
+      // Round up to the nearest 1000
+      return Math.max(PRICE_ABSOLUTE_MAX, Math.ceil(max / 1000) * 1000)
+    }, [products])
+
+    // Local slider state — synced from URL, committed back on release/blur
+    const [localMin, setLocalMin] = useState(priceRange[0])
+    const [localMax, setLocalMax] = useState(priceRange[1] === PRICE_ABSOLUTE_MAX ? priceCeiling : priceRange[1])
+    const [minInput, setMinInput] = useState(String(priceRange[0]))
+    const [maxInput, setMaxInput] = useState(priceRange[1] === PRICE_ABSOLUTE_MAX ? "" : String(priceRange[1]))
+
+    // Keep local state in sync when URL params change externally
+    const prevPriceRange = useRef(priceRange)
+    useEffect(() => {
+      if (
+        prevPriceRange.current[0] !== priceRange[0] ||
+        prevPriceRange.current[1] !== priceRange[1]
+      ) {
+        prevPriceRange.current = priceRange
+        setLocalMin(priceRange[0])
+        setLocalMax(priceRange[1] === PRICE_ABSOLUTE_MAX ? priceCeiling : priceRange[1])
+        setMinInput(priceRange[0] === 0 ? "" : String(priceRange[0]))
+        setMaxInput(priceRange[1] === PRICE_ABSOLUTE_MAX ? "" : String(priceRange[1]))
+      }
+    }, [priceRange, priceCeiling])
+
+    function commitPriceRange(min: number, max: number) {
+      const clampedMin = Math.max(0, Math.min(min, max - 100))
+      const clampedMax = Math.min(priceCeiling, Math.max(max, min + 100))
+      updateParams({
+        minPrice: clampedMin > 0 ? String(clampedMin) : null,
+        maxPrice: clampedMax < priceCeiling ? String(clampedMax) : null,
+      })
+    }
 
     const updateParams = useCallback(
       (updates: Record<string, string | string[] | null>) => {
@@ -121,7 +164,8 @@ const ITEMS_PER_PAGE = 16
         const searchMatch = !query.trim() || matchesStorefrontQuery(product, query)
         const brandMatch = !selectedBrand || product.brand === selectedBrand
         const conditionMatch = !selectedCondition || product.condition === selectedCondition
-        const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
+        const effectiveMax = priceRange[1] >= PRICE_ABSOLUTE_MAX ? Infinity : priceRange[1]
+        const priceMatch = product.price >= priceRange[0] && product.price <= effectiveMax
 
         return searchMatch && brandMatch && conditionMatch && priceMatch
       })
@@ -171,6 +215,20 @@ const ITEMS_PER_PAGE = 16
         chips.push({ label: selectedColor, onRemove: () => updateParams({ color: null }) })
       }
 
+      const hasMinPrice = priceRange[0] > 0
+      const hasMaxPrice = priceRange[1] < PRICE_ABSOLUTE_MAX
+      if (hasMinPrice || hasMaxPrice) {
+        const label = hasMinPrice && hasMaxPrice
+          ? `GHC ${priceRange[0].toLocaleString()} – ${priceRange[1].toLocaleString()}`
+          : hasMinPrice
+          ? `From GHC ${priceRange[0].toLocaleString()}`
+          : `Up to GHC ${priceRange[1].toLocaleString()}`
+        chips.push({
+          label,
+          onRemove: () => updateParams({ minPrice: null, maxPrice: null }),
+        })
+      }
+
       return chips
     }, [query, selectedBrand, selectedCategories, selectedColor, selectedCondition, toggleCategory, updateParams])
 
@@ -217,22 +275,100 @@ const ITEMS_PER_PAGE = 16
 
         <div className="space-y-4">
           <p className="font-label text-xs font-bold uppercase tracking-[0.2em] text-primary">Price Range</p>
-          <div className="px-1">
+
+          {/* Dual range slider */}
+          <div className="relative px-1">
+            {/* Track fill */}
+            <div className="relative h-1 rounded-full bg-surface-high">
+              <div
+                className="absolute h-1 rounded-full bg-primary"
+                style={{
+                  left: `${(localMin / priceCeiling) * 100}%`,
+                  right: `${100 - (localMax / priceCeiling) * 100}%`,
+                }}
+              />
+            </div>
+            {/* Min thumb */}
             <input
               type="range"
               min={0}
-              max={15000}
+              max={priceCeiling}
               step={100}
-              value={priceRange[1]}
-              onChange={(event) => {
-                const nextValue = Number(event.target.value)
-                updateParams({ maxPrice: nextValue < 15000 ? String(nextValue) : null })
+              value={localMin}
+              onChange={(e) => {
+                const v = Math.min(Number(e.target.value), localMax - 100)
+                setLocalMin(v)
+                setMinInput(v === 0 ? "" : String(v))
               }}
-              className="w-full accent-primary"
+              onMouseUp={() => commitPriceRange(localMin, localMax)}
+              onTouchEnd={() => commitPriceRange(localMin, localMax)}
+              className="pointer-events-none absolute inset-0 w-full appearance-none bg-transparent accent-primary [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary"
             />
-            <div className="mt-2 flex justify-between font-mono text-[10px] text-content-secondary">
-              <span>GHC {priceRange[0].toLocaleString()}</span>
-              <span>GHC {priceRange[1].toLocaleString()}</span>
+            {/* Max thumb */}
+            <input
+              type="range"
+              min={0}
+              max={priceCeiling}
+              step={100}
+              value={localMax}
+              onChange={(e) => {
+                const v = Math.max(Number(e.target.value), localMin + 100)
+                setLocalMax(v)
+                setMaxInput(v >= priceCeiling ? "" : String(v))
+              }}
+              onMouseUp={() => commitPriceRange(localMin, localMax)}
+              onTouchEnd={() => commitPriceRange(localMin, localMax)}
+              className="pointer-events-none absolute inset-0 w-full appearance-none bg-transparent accent-primary [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary"
+            />
+          </div>
+
+          {/* Custom input fields */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-content-muted">Min (GHC)</label>
+              <input
+                type="number"
+                min={0}
+                max={priceCeiling}
+                step={100}
+                value={minInput}
+                placeholder="0"
+                onChange={(e) => setMinInput(e.target.value)}
+                onBlur={() => {
+                  const v = minInput === "" ? 0 : Math.max(0, Math.min(Number(minInput), localMax - 100))
+                  setLocalMin(v)
+                  setMinInput(v === 0 ? "" : String(v))
+                  commitPriceRange(v, localMax)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur()
+                }}
+                className="w-full rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
+              />
+            </div>
+            <span className="mt-4 text-content-muted">–</span>
+            <div className="flex-1">
+              <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-content-muted">Max (GHC)</label>
+              <input
+                type="number"
+                min={0}
+                max={priceCeiling}
+                step={100}
+                value={maxInput}
+                placeholder="Any"
+                onChange={(e) => setMaxInput(e.target.value)}
+                onBlur={() => {
+                  const raw = maxInput === "" ? priceCeiling : Number(maxInput)
+                  const v = Math.min(priceCeiling, Math.max(raw, localMin + 100))
+                  setLocalMax(v)
+                  setMaxInput(v >= priceCeiling ? "" : String(v))
+                  commitPriceRange(localMin, v)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur()
+                }}
+                className="w-full rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
+              />
             </div>
           </div>
         </div>
