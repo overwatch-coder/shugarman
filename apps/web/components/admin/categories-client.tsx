@@ -275,14 +275,15 @@ export function CategoriesClient({
             No categories yet. Add your first category.
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
                 <th className="w-10 px-3 py-3" />
-                <th className="px-5 py-3">Name</th>
-                <th className="px-5 py-3">Slug</th>
-                <th className="px-5 py-3">Order</th>
-                <th className="px-5 py-3 text-right">Actions</th>
+                <th className="px-5 py-3 whitespace-nowrap">Name</th>
+                <th className="px-5 py-3 whitespace-nowrap">Slug</th>
+                <th className="px-5 py-3 whitespace-nowrap">Order</th>
+                <th className="px-5 py-3 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <DndContext
@@ -307,6 +308,7 @@ export function CategoriesClient({
               </SortableContext>
             </DndContext>
           </table>
+          </div>
         )}
       </div>
 

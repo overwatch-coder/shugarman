@@ -77,7 +77,7 @@ export function ProductsClient({
           </div>
         ) : (
           <>
-            <div className="grid gap-3 p-3 md:hidden">
+            <div className="grid gap-3 p-3 hidden">
               {filtered.map((product) => (
                 <article key={product.slug} className="rounded-xl border border-border bg-surface p-4">
                   <div className="flex items-start gap-3">
@@ -132,16 +132,16 @@ export function ProductsClient({
               ))}
             </div>
 
-            <div className="hidden overflow-x-auto md:block">
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
-                  <th className="px-5 py-3">Product</th>
-                  <th className="px-5 py-3">Brand</th>
-                  <th className="px-5 py-3">Price</th>
-                  <th className="px-5 py-3">Condition</th>
-                  <th className="px-5 py-3">Stock</th>
-                  <th className="px-5 py-3 text-right">Actions</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Product</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Brand</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Price</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Condition</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Stock</th>
+                  <th className="px-5 py-3 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>

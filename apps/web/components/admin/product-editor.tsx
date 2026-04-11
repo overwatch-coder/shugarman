@@ -600,11 +600,12 @@ function SpecsEditor({
       {/* Existing specs */}
       {specs.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface/50">
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary w-40">Spec Name</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary">Value</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary w-40 whitespace-nowrap">Spec Name</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary whitespace-nowrap">Value</th>
                 <th className="w-10" />
               </tr>
             </thead>
@@ -627,6 +628,7 @@ function SpecsEditor({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

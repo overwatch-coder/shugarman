@@ -86,7 +86,7 @@ export function OrdersClient({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as OrderStatus | "all")}
-            className="appearance-none rounded-lg border border-border bg-surface px-4 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-primary/50"
+            className="w-full appearance-none rounded-lg border border-border bg-surface px-4 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-primary/50 sm:w-auto"
           >
             <option value="all">All Statuses</option>
             {STATUS_OPTIONS.map((s) => (
@@ -118,40 +118,45 @@ export function OrdersClient({
                 {/* Order header row */}
                 <button
                   onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
-                  className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-accent/60"
+                  className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-accent/60"
                 >
-                  <Package className="size-5 shrink-0 text-content-secondary" />
+                  <Package className="mt-0.5 size-5 shrink-0 text-content-secondary" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm font-bold text-foreground">
-                        #{order.id.slice(0, 8)}
-                      </span>
-                      <span
-                        className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[order.status]}`}
-                      >
-                        {order.status}
-                      </span>
+                    {/* ID + badge + chevron */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="font-mono text-sm font-bold text-foreground">
+                          #{order.id.slice(0, 8)}
+                        </span>
+                        <span
+                          className={`inline-flex shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[order.status]}`}
+                        >
+                          {order.status}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        className={`size-4 shrink-0 text-content-secondary transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      />
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-content-secondary">
+                    {/* Customer name */}
+                    <p className="mt-1 truncate text-xs text-content-secondary">
                       {getCustomerName(order)} · {order.customer.email}
                     </p>
+                    {/* Price + item count */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="font-mono text-sm font-bold text-foreground">
+                        GHC {order.total.toLocaleString()}
+                      </p>
+                      <p className="text-[10px] text-content-secondary">
+                        {order.items.length} item{order.items.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono text-sm font-bold text-foreground">
-                      GHC {order.total.toLocaleString()}
-                    </p>
-                    <p className="text-[10px] text-content-secondary">
-                      {order.items.length} item{order.items.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={`size-4 shrink-0 text-content-secondary transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                  />
                 </button>
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="border-t border-border px-5 py-4">
+                  <div className="border-t border-border px-4 py-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       {/* Shipping */}
                       <div>
@@ -209,11 +214,11 @@ export function OrdersClient({
                     </div>
 
                     {/* Update status */}
-                    <div className="mt-4 flex items-center gap-3">
+                    <div className="mt-4">
                       <span className="text-xs font-bold uppercase tracking-wider text-content-secondary">
                         Update Status
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {STATUS_OPTIONS.map((s) => (
                           <button
                             key={s}

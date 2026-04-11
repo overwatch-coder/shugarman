@@ -171,12 +171,12 @@ export function ReviewsClient({ initialReviews }: { initialReviews: ReviewDoc[] 
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Product</th>
-                <th className="text-left px-4 py-3 font-medium">Author</th>
-                <th className="text-left px-4 py-3 font-medium">Rating</th>
-                <th className="text-left px-4 py-3 font-medium">Review</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Date</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Product</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Author</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Rating</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Review</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Status</th>
+                <th className="text-left px-4 py-3 font-medium whitespace-nowrap">Date</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>

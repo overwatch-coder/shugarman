@@ -175,13 +175,14 @@ export function BrandsClient({
             No brands yet. Add your first brand.
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wider text-content-secondary">
-                <th className="px-5 py-3">Brand</th>
-                <th className="px-5 py-3">Slug</th>
-                <th className="px-5 py-3">Featured</th>
-                <th className="px-5 py-3 text-right">Actions</th>
+                <th className="px-5 py-3 whitespace-nowrap">Brand</th>
+                <th className="px-5 py-3 whitespace-nowrap">Slug</th>
+                <th className="px-5 py-3 whitespace-nowrap">Featured</th>
+                <th className="px-5 py-3 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -228,6 +229,7 @@ export function BrandsClient({
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

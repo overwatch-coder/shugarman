@@ -4,6 +4,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app"
 import { getAuth, type Auth } from "firebase/auth"
 import { getFirestore, type Firestore } from "firebase/firestore"
 import { getStorage, type FirebaseStorage } from "firebase/storage"
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics"
 
 function getFirebaseConfig() {
   return {
@@ -13,6 +14,7 @@ function getFirebaseConfig() {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
   }
 }
 
@@ -55,4 +57,12 @@ export function getFirebaseDb(): Firestore {
 
 export function getFirebaseStorage(): FirebaseStorage {
   return getStorage(getFirebaseApp())
+}
+
+/** Returns the Analytics instance, or null in environments where it's not supported (SSR, bots). */
+export async function getFirebaseAnalytics(): Promise<Analytics | null> {
+  if (typeof window === "undefined") return null
+  const supported = await isSupported()
+  if (!supported) return null
+  return getAnalytics(getFirebaseApp())
 }

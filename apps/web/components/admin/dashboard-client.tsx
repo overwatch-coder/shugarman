@@ -478,13 +478,14 @@ export function DashboardClient({ stats }: StatsProps) {
               No orders yet. Orders placed from the storefront will appear here.
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs font-bold uppercase tracking-wider text-content-secondary">
-                  <th className="px-5 py-3">Order ID</th>
-                  <th className="px-5 py-3">Customer</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3 text-right">Total</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Order ID</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Customer</th>
+                  <th className="px-5 py-3 whitespace-nowrap">Status</th>
+                  <th className="px-5 py-3 text-right whitespace-nowrap">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -510,6 +511,7 @@ export function DashboardClient({ stats }: StatsProps) {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

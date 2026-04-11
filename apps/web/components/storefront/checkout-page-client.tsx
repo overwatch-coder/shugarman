@@ -81,6 +81,8 @@ export function CheckoutPageClient({
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [errors, setErrors] = useState<string[]>([])
+  const [paymentConfirmOpen, setPaymentConfirmOpen] = useState(false)
+  const [placingOrder, setPlacingOrder] = useState(false)
 
   const summary = useMemo(() => {
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -136,10 +138,9 @@ export function CheckoutPageClient({
     return nextErrors.length === 0
   }
 
-  async function handleContinue() {
-    if (!validateCurrentStep()) return
-    if (step === "payment") {
-      const result = await createOrder({
+  async function handleConfirmOrder() {
+    setPlacingOrder(true)
+    const result = await createOrder({
         customer: shippingAddress,
         shipping: shippingMethod!,
         payment: paymentMethod!,
@@ -160,14 +161,24 @@ export function CheckoutPageClient({
         notes: shippingAddress.notes,
       })
 
-      if (!result.success) {
-        const message = result.error ?? "We couldn't save your order. Please try again."
-        setErrors([message])
-        toast.error(message)
-        return
-      }
+    setPlacingOrder(false)
+    if (!result.success) {
+      const message = result.error ?? "We couldn't save your order. Please try again."
+      setErrors([message])
+      toast.error(message)
+      setPaymentConfirmOpen(false)
+      return
+    }
 
-      placeOrder()
+    setPaymentConfirmOpen(false)
+    clearCart()
+    placeOrder()
+  }
+
+  async function handleContinue() {
+    if (!validateCurrentStep()) return
+    if (step === "payment") {
+      setPaymentConfirmOpen(true)
       return
     }
     goNext()
@@ -249,21 +260,103 @@ export function CheckoutPageClient({
 
     if (step === "payment") {
       const method = paymentMethod ?? { type: "momo" as const }
+
+      const paymentOptions = [
+        {
+          type: "momo" as const,
+          label: "Mobile Money",
+          sublabel: "MTN · Telecel · AirtelTigo",
+          illustration: (
+            <svg viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 w-auto">
+              {/* Phone body */}
+              <rect x="22" y="2" width="26" height="44" rx="4" fill="#1a1a1a" stroke="#444" strokeWidth="1.2" />
+              <rect x="25" y="8" width="20" height="28" rx="1.5" fill="#111" />
+              {/* Screen glow - yellow/gold for MTN MoMo */}
+              <rect x="25" y="8" width="20" height="28" rx="1.5" fill="url(#momoGrad)" opacity="0.9" />
+              {/* Signal waves */}
+              <path d="M50 14 C54 14 57 17 57 21" stroke="#FFCC00" strokeWidth="2" strokeLinecap="round" />
+              <path d="M50 18 C52.5 18 54.5 20 54.5 22.5" stroke="#FFCC00" strokeWidth="1.5" strokeLinecap="round" />
+              {/* Coin */}
+              <circle cx="58" cy="36" r="10" fill="#FFCC00" />
+              <circle cx="58" cy="36" r="7.5" fill="#F5B800" />
+              <text x="55" y="40" fontSize="9" fontWeight="bold" fill="#7A5800" fontFamily="sans-serif">₵</text>
+              {/* Home button */}
+              <circle cx="35" cy="42" r="2" fill="#333" />
+              <defs>
+                <linearGradient id="momoGrad" x1="25" y1="8" x2="45" y2="36" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#FFCC00" stopOpacity="0.3" />
+                  <stop offset="1" stopColor="#FF6B00" stopOpacity="0.15" />
+                </linearGradient>
+              </defs>
+            </svg>
+          ),
+        },
+        {
+          type: "cash" as const,
+          label: "Cash on Delivery",
+          sublabel: "Pay when you receive",
+          illustration: (
+            <svg viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 w-auto">
+              {/* Delivery bag */}
+              <rect x="8" y="22" width="38" height="28" rx="3" fill="#2a2a2a" stroke="#555" strokeWidth="1.2" />
+              <path d="M16 22 C16 14 38 14 38 22" stroke="#555" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+              {/* Banknote */}
+              <rect x="28" y="18" width="40" height="24" rx="3" fill="#16a34a" />
+              <rect x="31" y="21" width="34" height="18" rx="2" fill="#15803d" />
+              {/* Note details */}
+              <ellipse cx="48" cy="30" rx="6" ry="6" fill="#22c55e" opacity="0.5" />
+              <text x="45" y="33.5" fontSize="8" fontWeight="bold" fill="#dcfce7" fontFamily="sans-serif">₵</text>
+              <rect x="32" y="22" width="8" height="2" rx="1" fill="#4ade80" opacity="0.5" />
+              <rect x="60" y="34" width="8" height="2" rx="1" fill="#4ade80" opacity="0.5" />
+              {/* Bag handle dot */}
+              <circle cx="27" cy="34" r="2.5" fill="#444" />
+            </svg>
+          ),
+        },
+        {
+          type: "installment" as const,
+          label: "Installments",
+          sublabel: "50% now · rest in 12 weeks",
+          illustration: (
+            <svg viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 w-auto">
+              {/* Calendar */}
+              <rect x="8" y="10" width="40" height="38" rx="3" fill="#1e1e2e" stroke="#444" strokeWidth="1.2" />
+              <rect x="8" y="10" width="40" height="10" rx="3" fill="#e8182c" />
+              <rect x="8" y="16" width="40" height="4" fill="#e8182c" />
+              {/* Calendar tabs */}
+              <rect x="16" y="7" width="3" height="7" rx="1.5" fill="#888" />
+              <rect x="37" y="7" width="3" height="7" rx="1.5" fill="#888" />
+              {/* Calendar dots - weeks */}
+              {[0,1,2,3,4,5,6].map((col) => [0,1,2,3].map((row) => (
+                <circle key={`${col}-${row}`} cx={13 + col * 5} cy={26 + row * 6} r="1.8"
+                  fill={row === 0 && col < 3 ? "#e8182c" : row === 0 && col === 3 ? "#e8182c" : "#555"} />
+              )))}
+              {/* Checkmarks on first row */}
+              <path d="M11 26.5 l1.5 1.5 l2.5-2.5" stroke="#e8182c" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              {/* Progress bar */}
+              <rect x="52" y="12" width="16" height="34" rx="3" fill="#1a1a2e" stroke="#333" strokeWidth="1" />
+              <rect x="52" y="34" width="16" height="12" rx="3" fill="#e8182c" />
+              <text x="56" y="44" fontSize="6" fontWeight="bold" fill="white" fontFamily="sans-serif">50%</text>
+            </svg>
+          ),
+        },
+      ] as const
+
       return (
         <div className="space-y-5">
           <div className="grid gap-3 md:grid-cols-3">
-            {([
-              ["momo", "Mobile Money"],
-              ["cash", "Cash on Delivery"],
-              ["installment", "Installments"],
-            ] as const).map(([type, label]) => (
+            {paymentOptions.map(({ type, label, sublabel, illustration }) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setPaymentMethod({ type })}
-                className={method.type === type ? "border border-primary bg-primary/10 px-4 py-4 text-left" : "border border-white/10 bg-surface-high px-4 py-4 text-left transition-colors hover:border-white/20"}
+                className={method.type === type ? "flex flex-col items-start gap-3 border border-primary bg-primary/10 px-4 py-4 text-left" : "flex flex-col items-start gap-3 border border-white/10 bg-surface-high px-4 py-4 text-left transition-colors hover:border-white/20"}
               >
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-foreground">{label}</p>
+                {illustration}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-foreground">{label}</p>
+                  <p className="mt-0.5 text-[11px] text-content-muted">{sublabel}</p>
+                </div>
               </button>
             ))}
           </div>
@@ -346,6 +439,135 @@ export function CheckoutPageClient({
 
   return (
     <MotionPage className="py-12">
+      {/* ── Payment Confirmation Modal ─────────────────────────────────── */}
+      <Dialog open={paymentConfirmOpen} onOpenChange={(open) => { if (!placingOrder) setPaymentConfirmOpen(open) }}>
+        <DialogContent className="max-h-[90dvh] !max-w-[500px] overflow-y-auto rounded-2xl border border-white/10 bg-[#16102a] p-0 text-foreground shadow-2xl">
+          <div className="space-y-6 p-8">
+            {/* Header */}
+            <div>
+              <div className="inline-flex size-12 items-center justify-center rounded-full bg-violet-500/20">
+                <CreditCard className="size-5 text-violet-400" />
+              </div>
+              <DialogTitle className="mt-4 font-display text-3xl uppercase tracking-tight text-white">
+                Confirm Payment
+              </DialogTitle>
+              <DialogDescription className="mt-1.5 text-sm text-neutral-400">
+                Review the payment arrangement before your order is placed.
+              </DialogDescription>
+            </div>
+
+            {/* Payment method block */}
+            {paymentMethod?.type === "momo" && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-violet-500/20 bg-violet-500/10 p-5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Your Mobile Money</p>
+                  <p className="mt-3 text-base font-bold text-white">{paymentMethod.momoProvider ?? "—"} MoMo</p>
+                  <p className="mt-1 font-mono text-sm text-neutral-300">{paymentMethod.momoNumber ?? "—"}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500">
+                    {shippingAddress.firstName} {shippingAddress.lastName}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Send Payment To</p>
+                  <p className="mt-3 text-base font-bold text-white">{storeMetadata.name}</p>
+                  <div className="mt-2 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">MTN MoMo</span>
+                      <span className="font-mono text-sm font-bold text-white">
+                        {storeMetadata.whatsapp.replace(/^233/, "0")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Contact</span>
+                      <span className="font-mono text-sm text-neutral-300">{storeMetadata.phone}</span>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
+                    Send the full order amount to the number above, then tap &ldquo;Confirm — I Have Paid&rdquo; to place your order.
+                    Our team will verify within 30 minutes.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {paymentMethod?.type === "cash" && (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Cash on Delivery</p>
+                <p className="mt-3 text-sm leading-relaxed text-neutral-300">
+                  You agree to pay in full cash when your order is delivered. Our delivery agent will collect
+                  the exact amount of <span className="font-mono font-bold text-white">{formatPrice(summary.total, "GHC")}</span> at
+                  the time of handover.
+                </p>
+                <p className="mt-2 text-[11px] text-neutral-500">
+                  Contact us at {storeMetadata.phone} if you have questions before delivery.
+                </p>
+              </div>
+            )}
+
+            {paymentMethod?.type === "installment" && (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-violet-500/20 bg-violet-500/10 p-5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Down Payment Due Now</p>
+                  <p className="mt-2 font-mono text-2xl font-black text-white">
+                    {formatPrice(summary.total * 0.5, "GHC")}
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-400">50% of order total · {formatPrice(summary.total, "GHC")}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Send Down Payment To</p>
+                  <p className="mt-3 text-base font-bold text-white">{storeMetadata.name}</p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">MTN MoMo</span>
+                    <span className="font-mono text-sm font-bold text-white">
+                      {storeMetadata.whatsapp.replace(/^233/, "0")}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
+                    Remaining balance of {formatPrice(summary.total * 0.5, "GHC")} is cleared within 12 weeks.
+                    Our team will confirm your schedule after order placement.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Order total summary */}
+            <div className="rounded-xl border border-white/10 bg-white/5 px-5 py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Order Total</span>
+                <span className="font-mono text-lg font-black text-white">{formatPrice(summary.total, "GHC")}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-xs text-neutral-500">Shipping</span>
+                <span className="font-mono text-xs text-neutral-400">
+                  {summary.shipping === 0 ? "Free" : formatPrice(summary.shipping, "GHC")}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={handleConfirmOrder}
+                disabled={placingOrder}
+                className="inline-flex w-full items-center justify-center rounded-xl bg-violet-600 px-6 py-4 text-sm font-black uppercase tracking-[0.18em] text-white transition-colors hover:bg-violet-500 disabled:opacity-60"
+              >
+                {placingOrder ? "Placing Order…" : paymentMethod?.type === "cash" ? "Confirm & Place Order" : "Confirm — I Have Paid"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentConfirmOpen(false)}
+                disabled={placingOrder}
+                className="inline-flex w-full items-center justify-center rounded-xl border border-white/10 px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-neutral-400 transition-colors hover:text-white disabled:opacity-60"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Order Success Modal ────────────────────────────────────────── */}
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
         <DialogContent
           showCloseButton={false}
