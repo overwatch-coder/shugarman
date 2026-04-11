@@ -467,7 +467,6 @@ function StorageEditor({
 
   function add() {
     if (!label.trim()) return
-    // value defaults to label when left blank
     const resolvedValue = value.trim() || label.trim()
     onChange([...options, { label: label.trim(), value: resolvedValue }])
     setLabel("")
@@ -475,20 +474,30 @@ function StorageEditor({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <p className="text-sm text-content-secondary">
+        Add the storage sizes available for this product. Each option appears as a selectable button on the product page.
+      </p>
+
+      {/* Existing options */}
       {options.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {options.map((o, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5"
+              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2"
             >
-              <span className="text-xs text-foreground">{o.label}</span>
-              <span className="text-[10px] text-content-secondary">{o.value}</span>
+              <div>
+                <span className="block text-xs font-semibold text-foreground">{o.label}</span>
+                {o.value !== o.label && (
+                  <span className="block text-[10px] font-mono text-content-muted">{o.value}</span>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => onChange(options.filter((_, j) => j !== i))}
-                className="text-neutral-500 hover:text-red-400"
+                className="ml-1 text-content-muted hover:text-red-400"
+                aria-label="Remove"
               >
                 <X className="size-3" />
               </button>
@@ -496,27 +505,46 @@ function StorageEditor({
           ))}
         </div>
       )}
-      <div className="flex gap-2">
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Label (e.g. 256GB)"
-          className={inputCls + " flex-1"}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
-        />
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Value (e.g. 256) — optional"
-          className={inputCls + " w-36"}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
-        />
+
+      {/* Add new option */}
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-content-secondary">Add Storage Option</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-content-secondary">
+              Display Label <span className="text-red-400">*</span>
+            </label>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="e.g. 256 GB"
+              className={inputCls}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
+            />
+            <p className="mt-1 text-[11px] text-content-muted">What customers will see on the product page</p>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-content-secondary">
+              Internal Value <span className="text-content-muted">(optional)</span>
+            </label>
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="e.g. 256"
+              className={inputCls}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
+            />
+            <p className="mt-1 text-[11px] text-content-muted">Short identifier used for filtering — defaults to label</p>
+          </div>
+        </div>
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-border px-3 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
+          disabled={!label.trim()}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Plus className="size-4" />
+          <Plus className="size-3.5" />
+          Add Storage Option
         </button>
       </div>
     </div>
@@ -538,7 +566,7 @@ function SpecsEditor({
 
   function add() {
     if (!label.trim() || !value.trim()) {
-      setSpecError("Both spec name and value are required.")
+      setSpecError("Both the spec name and its value are required.")
       return
     }
     setSpecError("")
@@ -548,52 +576,84 @@ function SpecsEditor({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <p className="text-sm text-content-secondary">
+        List the technical details of this product (e.g. Display, Processor, Battery). These appear in the specs table on the product page.
+      </p>
+
+      {/* Existing specs */}
       {specs.length > 0 && (
-        <div className="space-y-1.5">
-          {specs.map((s, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2"
-            >
-              <GripVertical className="size-3.5 shrink-0 text-content-muted" />
-              <span className="w-32 shrink-0 text-xs font-medium text-foreground">{s.label}</span>
-              <span className="flex-1 text-xs text-content-secondary">{s.value}</span>
-              <button
-                type="button"
-                onClick={() => onChange(specs.filter((_, j) => j !== i))}
-                className="text-neutral-500 hover:text-red-400"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          ))}
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface/50">
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary w-40">Spec Name</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-content-secondary">Value</th>
+                <th className="w-10" />
+              </tr>
+            </thead>
+            <tbody>
+              {specs.map((s, i) => (
+                <tr key={i} className="border-b border-border last:border-0">
+                  <td className="px-4 py-2.5 text-xs font-semibold text-foreground">{s.label}</td>
+                  <td className="px-4 py-2.5 text-xs text-content-secondary">{s.value}</td>
+                  <td className="px-4 py-2.5 text-right">
+                    <button
+                      type="button"
+                      onClick={() => onChange(specs.filter((_, j) => j !== i))}
+                      className="text-content-muted hover:text-red-400"
+                      aria-label="Remove"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-      {specError && (
-        <p className="text-xs text-red-400">{specError}</p>
-      )}
-      <div className="flex gap-2">
-        <input
-          value={label}
-          onChange={(e) => { setLabel(e.target.value); setSpecError("") }}
-          placeholder="Name (e.g. Display)"
-          className={inputCls + " w-40"}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
-        />
-        <input
-          value={value}
-          onChange={(e) => { setValue(e.target.value); setSpecError("") }}
-          placeholder="Value (e.g. 6.7″ OLED)"
-          className={inputCls + " flex-1"}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
-        />
+
+      {/* Add new spec */}
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-content-secondary">Add Spec</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-content-secondary">
+              Spec Name <span className="text-red-400">*</span>
+            </label>
+            <input
+              value={label}
+              onChange={(e) => { setLabel(e.target.value); setSpecError("") }}
+              placeholder="e.g. Display"
+              className={inputCls}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
+            />
+            <p className="mt-1 text-[11px] text-content-muted">The spec category — Battery, Processor, RAM…</p>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-content-secondary">
+              Value <span className="text-red-400">*</span>
+            </label>
+            <input
+              value={value}
+              onChange={(e) => { setValue(e.target.value); setSpecError("") }}
+              placeholder="e.g. 6.7″ Super Retina OLED"
+              className={inputCls}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
+            />
+            <p className="mt-1 text-[11px] text-content-muted">The spec detail — 5000 mAh, A17 Pro, 8 GB…</p>
+          </div>
+        </div>
+        {specError && <p className="mt-2 text-xs text-red-400">{specError}</p>}
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-border px-3 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
+          disabled={!label.trim() || !value.trim()}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Plus className="size-4" />
+          <Plus className="size-3.5" />
+          Add Spec
         </button>
       </div>
     </div>
