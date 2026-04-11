@@ -464,6 +464,21 @@ function StorageEditor({
 }) {
   const [label, setLabel] = useState("")
   const [value, setValue] = useState("")
+  // Track whether the user has manually edited the value field
+  const [valueEdited, setValueEdited] = useState(false)
+
+  function handleLabelChange(next: string) {
+    setLabel(next)
+    // Keep value in sync with label until the user edits it manually
+    if (!valueEdited) {
+      setValue(next)
+    }
+  }
+
+  function handleValueChange(next: string) {
+    setValue(next)
+    setValueEdited(true)
+  }
 
   function add() {
     if (!label.trim()) return
@@ -471,6 +486,7 @@ function StorageEditor({
     onChange([...options, { label: label.trim(), value: resolvedValue }])
     setLabel("")
     setValue("")
+    setValueEdited(false)
   }
 
   return (
@@ -516,7 +532,7 @@ function StorageEditor({
             </label>
             <input
               value={label}
-              onChange={(e) => setLabel(e.target.value)}
+              onChange={(e) => handleLabelChange(e.target.value)}
               placeholder="e.g. 256 GB"
               className={inputCls}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
@@ -525,16 +541,16 @@ function StorageEditor({
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-content-secondary">
-              Internal Value <span className="text-content-muted">(optional)</span>
+              Internal Value <span className="text-content-muted">(optional — edit to customise)</span>
             </label>
             <input
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => handleValueChange(e.target.value)}
               placeholder="e.g. 256"
               className={inputCls}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
             />
-            <p className="mt-1 text-[11px] text-content-muted">Short identifier used for filtering — defaults to label</p>
+            <p className="mt-1 text-[11px] text-content-muted">Auto-filled from the label — edit if you need a shorter identifier for filtering</p>
           </div>
         </div>
         <button
