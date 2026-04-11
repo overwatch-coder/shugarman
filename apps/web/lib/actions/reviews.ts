@@ -2,6 +2,7 @@
 
 import { adminDb } from "@/lib/firebase-admin"
 import type { ReviewDoc, ReviewStatus } from "@/lib/schemas"
+import { createNotification } from "@/lib/actions/notifications"
 
 const COLLECTION = "reviews"
 
@@ -81,6 +82,17 @@ export async function submitReview(data: {
       createdAt: now,
       updatedAt: now,
     })
+
+    // Notify admin — fire-and-forget, don't block the response
+    createNotification({
+      event: "new_review",
+      level: "info",
+      title: "New review pending approval",
+      message: `${data.reviewerName.trim()} left a ${data.rating}-star review on "${data.productName}".`,
+      resourceSlug: data.productSlug,
+      resourceType: "review",
+    }).catch((err) => console.error("review notification:", err))
+
     return { success: true }
   } catch (err) {
     console.error("submitReview:", err)
