@@ -1,91 +1,54 @@
-import { randomUUID } from "node:crypto"
+import { v2 as cloudinary } from "cloudinary"
 
-import { adminApp, adminStorage } from "@/lib/firebase-admin"
-import { getStorageBucketCandidates } from "@/lib/storage-bucket"
+function getCloudinaryConfig() {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-function sanitizeFileName(fileName: string) {
-  return fileName.replace(/[^a-zA-Z0-9._-]+/g, "-")
-}
-
-export function buildFirebaseDownloadUrl(bucketName: string, objectPath: string, token: string) {
-  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`
-}
-
-async function resolveStorageBucket(): Promise<ReturnType<typeof adminStorage.bucket>> {
-  const projectId =
-    process.env.FIREBASE_ADMIN_PROJECT_ID ??
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ??
-    adminApp.options.projectId?.toString()
-
-  const candidates = getStorageBucketCandidates({
-    configuredBucket:
-      process.env.FIREBASE_ADMIN_STORAGE_BUCKET ?? process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    projectId,
-  })
-
-  for (const bucketName of candidates) {
-    const bucket = adminStorage.bucket(bucketName)
-    const [exists] = await bucket.exists()
-    if (exists) {
-      return bucket
-    }
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error(
+      "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your .env.local"
+    )
   }
 
-  throw new Error(
-    `No Firebase Storage bucket found. Checked: ${candidates.join(", ") || "<none>"}. Configure FIREBASE_ADMIN_STORAGE_BUCKET or create the default bucket.`
-  )
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true })
 }
 
-async function uploadImageBuffer({
-  buffer,
-  contentType,
-  folder,
-  fileName,
-  metadata,
-}: {
-  buffer: Buffer
-  contentType: string
-  folder: string
-  fileName: string
-  metadata?: Record<string, string>
-}) {
-  const bucket = await resolveStorageBucket()
-  const extension = contentType.split("/")[1]?.split(";")[0]?.trim() || "jpg"
-  const objectPath = `${folder}/${Date.now()}-${randomUUID()}-${sanitizeFileName(fileName)}.${extension}`
-  const token = randomUUID()
-
-  await bucket.file(objectPath).save(buffer, {
-    metadata: {
-      contentType,
-      metadata: {
-        firebaseStorageDownloadTokens: token,
-        ...(metadata ?? {}),
-      },
-    },
-    resumable: false,
-  })
-
-  return {
-    bucketName: bucket.name,
-    objectPath,
-    url: buildFirebaseDownloadUrl(bucket.name, objectPath, token),
+function sanitizeFolder(folder: string) {
+  const cleaned = folder.trim().replace(/^\/+|\/+$/g, "")
+  if (!cleaned || cleaned.includes("..")) {
+    throw new Error("Invalid upload folder")
   }
+  return cleaned
 }
 
 export async function uploadImageFileToStorage(file: File, folder: string) {
-  const contentType = file.type || "image/jpeg"
-
+  const contentType = file.type || "application/octet-stream"
   if (!contentType.startsWith("image/")) {
     throw new Error("Only image uploads are supported")
   }
 
+  getCloudinaryConfig()
+
   const arrayBuffer = await file.arrayBuffer()
-  return uploadImageBuffer({
-    buffer: Buffer.from(arrayBuffer),
-    contentType,
-    folder,
-    fileName: file.name,
+  const buffer = Buffer.from(arrayBuffer)
+  const safeFolder = sanitizeFolder(folder)
+
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: safeFolder, resource_type: "image" },
+      (error, response) => {
+        if (error || !response) {
+          reject(error ?? new Error("Cloudinary upload returned no response"))
+        } else {
+          resolve(response)
+        }
+      }
+    )
+    stream.end(buffer)
   })
+
+  return { url: result.secure_url }
 }
 
 export async function importImageUrlToStorage(imageUrl: string, folder: string) {
@@ -94,26 +57,15 @@ export async function importImageUrlToStorage(imageUrl: string, folder: string) 
     throw new Error("Image URL is required")
   }
 
-  const response = await fetch(trimmedUrl)
-  if (!response.ok) {
-    throw new Error("Could not download image from the provided URL")
-  }
+  getCloudinaryConfig()
 
-  const contentType = response.headers.get("content-type") ?? ""
-  if (!contentType.startsWith("image/")) {
-    throw new Error("The provided URL does not point to a valid image")
-  }
+  const safeFolder = sanitizeFolder(folder)
 
-  const arrayBuffer = await response.arrayBuffer()
-  const fileName = trimmedUrl.split("/").pop() || "imported-image"
-
-  return uploadImageBuffer({
-    buffer: Buffer.from(arrayBuffer),
-    contentType,
-    folder,
-    fileName,
-    metadata: {
-      sourceUrl: trimmedUrl,
-    },
+  // Cloudinary natively fetches and stores the remote image from the URL
+  const result = await cloudinary.uploader.upload(trimmedUrl, {
+    folder: safeFolder,
+    resource_type: "image",
   })
+
+  return { url: result.secure_url }
 }
