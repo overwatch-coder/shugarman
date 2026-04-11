@@ -1,11 +1,12 @@
 import { Inter, Bebas_Neue, DM_Mono, Space_Grotesk } from "next/font/google"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Suspense } from "react"
 
 import "@workspace/ui/globals.css"
 import "./storefront.css"
 import { AppToaster } from "@/components/shared/app-toaster"
 import { FirebaseAnalytics } from "@/components/shared/firebase-analytics"
+import { ServiceWorkerRegistration } from "@/components/shared/service-worker-registration"
 import { CartProvider } from "@/components/storefront/cart-provider"
 import { TrafficTracker } from "@/components/storefront/traffic-tracker"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -34,10 +35,44 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-label",
 })
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f10" },
+    { media: "(prefers-color-scheme: light)", color: "#ef4444" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  viewportFit: "cover",
+}
+
 export const metadata: Metadata = {
-  title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+  title: {
+    default: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+    template: `%s | ${BRAND_NAME}`,
+  },
   description:
     "New, refurbished & unlocked phones in Kumasi — with flexible payment plans. Experience the future of mobile retail.",
+  applicationName: BRAND_NAME,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Shugarman",
+    startupImage: [
+      { url: "/icons/apple-touch-icon.svg", media: "(device-width: 375px)" },
+    ],
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/icons/icon-512.svg", sizes: "512x512", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.svg", sizes: "180x180", type: "image/svg+xml" }],
+  },
 }
 
 export default function RootLayout({
@@ -62,6 +97,7 @@ export default function RootLayout({
           <AppToaster />
           <Suspense>
             <FirebaseAnalytics />
+            <ServiceWorkerRegistration />
           </Suspense>
           <CartProvider>
             <TrafficTracker />

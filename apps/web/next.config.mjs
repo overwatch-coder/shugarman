@@ -1,3 +1,5 @@
+import withSerwist from "@serwist/next"
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],
@@ -27,4 +29,10 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+const withPWA = withSerwist({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
+})
+
+export default withPWA(nextConfig)

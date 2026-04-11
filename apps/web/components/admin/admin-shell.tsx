@@ -340,7 +340,7 @@ export function AdminShell({
             </button>
 
             {notificationsOpen && (
-              <div className="fixed inset-x-3 top-14 z-30 mt-1 rounded-2xl border border-border bg-popover text-popover-foreground shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[min(24rem,calc(100vw-2rem))]">
+              <div className="fixed inset-x-3 top-14 z-100 mt-1 rounded-2xl border border-border bg-popover text-popover-foreground shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[min(24rem,calc(100vw-2rem))]">
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
                   <div>
                     <p className="text-sm font-bold text-foreground">Notifications</p>
