@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { Heart, ShoppingCart } from "lucide-react"
+import { toast } from "sonner"
 
 import type { ProductCard as ProductCardType } from "@/lib/storefront-types"
 import { isExternalImageSource } from "@/lib/storefront-product-helpers"
@@ -28,6 +29,11 @@ export function ProductCard({
   const shouldReduceMotion = useReducedMotion()
   const { addProductCard } = useCart()
   const { hasItem, toggleItem } = useWishlistStore()
+
+  function handleAddToCart() {
+    addProductCard(product)
+    toast.success(`${product.name} added to cart`, { description: "View your cart to checkout." })
+  }
   const useNativeImage = isExternalImageSource(product.image)
   const wishlisted = hasItem(product.slug)
 
@@ -74,7 +80,7 @@ export function ProductCard({
         {showHoverCart ? (
           <button
             type="button"
-            onClick={() => addProductCard(product)}
+            onClick={handleAddToCart}
             className="absolute inset-x-[5%] bottom-3 z-20 flex translate-y-[120%] items-center justify-center rounded-md bg-primary px-4 py-3 text-xs font-black uppercase tracking-[0.15em] text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
           >
             Add to Cart
@@ -95,7 +101,7 @@ export function ProductCard({
           {showCartAction ? (
             <button
               type="button"
-              onClick={() => addProductCard(product)}
+              onClick={handleAddToCart}
               aria-label={`Add ${product.name} to cart`}
               className="inline-flex size-8 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-primary hover:text-white"
             >

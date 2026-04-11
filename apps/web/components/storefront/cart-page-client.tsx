@@ -80,27 +80,36 @@ export function CartPageClient() {
                       }
                 }
                 transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                className="flex items-center gap-5 border border-white/5 bg-surface-low px-5 py-4 transition-colors hover:bg-surface-bright"
+                className="flex flex-col gap-4 border border-white/5 bg-surface-low px-5 py-4 transition-colors hover:bg-surface-bright sm:flex-row sm:items-center sm:gap-5"
               >
-                <div className="size-[88px] shrink-0 overflow-hidden rounded-lg bg-surface-high">
-                  <Image src={item.image} alt={item.imageAlt} width={160} height={160} className="h-full w-full object-cover" />
+                {/* Image + name/variant — always on first row */}
+                <div className="flex items-center gap-4 sm:contents">
+                  <div className="size-[88px] shrink-0 overflow-hidden rounded-lg bg-surface-high">
+                    <Image src={item.image} alt={item.imageAlt} width={160} height={160} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-sm font-bold text-foreground">{item.name}</h2>
+                    <p className="mt-1 truncate text-xs text-content-secondary">{item.variant}</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-sm font-bold text-foreground">{item.name}</h2>
-                  <p className="mt-1 truncate text-xs text-content-secondary">{item.variant}</p>
+
+                {/* Quantity + price + delete — row on desktop, column on mobile */}
+                <div className="flex items-center justify-between gap-4 sm:contents">
+                  <div className="shrink-0">
+                    <QuantityStepper value={item.quantity} onChange={(quantity) => updateQuantity(item.slug, quantity)} />
+                  </div>
+                  <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-5">
+                    <p className="w-auto shrink-0 font-mono text-sm font-medium text-foreground sm:w-32 sm:text-right">{formatPrice(item.price, item.currency)}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.slug)}
+                      aria-label={`Remove ${item.name}`}
+                      className="shrink-0 text-content-muted transition-colors hover:text-primary"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="shrink-0">
-                  <QuantityStepper value={item.quantity} onChange={(quantity) => updateQuantity(item.slug, quantity)} />
-                </div>
-                <p className="w-32 shrink-0 text-right font-mono text-sm font-medium text-foreground">{formatPrice(item.price, item.currency)}</p>
-                <button
-                  type="button"
-                  onClick={() => removeItem(item.slug)}
-                  aria-label={`Remove ${item.name}`}
-                  className="shrink-0 text-content-muted transition-colors hover:text-primary"
-                >
-                  <Trash2 className="size-4" />
-                </button>
               </motion.div>
             ))}
           </AnimatePresence>

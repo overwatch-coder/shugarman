@@ -122,7 +122,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
           <Link
             href="/cart"
             aria-label="Cart"
-            className="relative hidden md:inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
+            className="relative inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
           >
             <ShoppingCart className="size-4" />
             <AnimatePresence initial={false}>

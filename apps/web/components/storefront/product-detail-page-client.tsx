@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Expand, Heart, MessageCircle, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 import {
   Dialog,
@@ -243,7 +244,7 @@ export function ProductDetailPageClient({
           <div className="space-y-4">
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
                 addProductDetail(product, {
                   color: selectedColor,
                   storage:
@@ -251,7 +252,8 @@ export function ProductDetailPageClient({
                   quantity,
                   image: currentImage,
                 })
-              }
+                toast.success(`${product.name} added to cart`, { description: "View your cart to checkout." })
+              }}
               className="inline-flex w-full items-center justify-center gap-3 rounded-md bg-primary px-6 py-5 text-sm font-black uppercase tracking-[0.2em] text-white sf-red-glow-box"
             >
               <ShoppingBag className="size-4" />
