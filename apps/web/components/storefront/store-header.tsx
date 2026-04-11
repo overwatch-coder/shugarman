@@ -4,7 +4,8 @@ import { useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ArrowRight, Heart, Menu, Search, ShoppingCart, UserRound } from "lucide-react"
+import { ArrowRight, Heart, Menu, Search, ShoppingCart, UserRound, X } from "lucide-react"
+import * as RadixDialog from "@radix-ui/react-dialog"
 
 import { cn } from "@workspace/ui/lib/utils"
 import {
@@ -100,7 +101,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
           <Link
             href="/wishlist"
             aria-label="Wishlist"
-            className="relative inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
+            className="relative hidden md:inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
           >
             <Heart className="size-4" />
             <AnimatePresence initial={false}>
@@ -121,7 +122,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
           <Link
             href="/cart"
             aria-label="Cart"
-            className="relative inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
+            className="relative hidden md:inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
           >
             <ShoppingCart className="size-4" />
             <AnimatePresence initial={false}>
@@ -143,7 +144,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
             type="button"
             aria-label="Account"
             onClick={() => setAuthOpen(true)}
-            className="inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
+            className="hidden md:inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
           >
             <UserRound className="size-4" />
           </button>
@@ -275,73 +276,106 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
         </DialogContent>
       </Dialog>
 
-      <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <DialogContent className="top-auto bottom-0 left-0 right-0 max-w-none translate-x-0 translate-y-0 rounded-b-none rounded-t-3xl border border-border bg-background p-0 sm:hidden">
-          <DialogHeader className="border-b border-border px-5 py-4">
-            <DialogTitle className="text-base font-black uppercase tracking-[0.16em] text-foreground">
-              Menu
-            </DialogTitle>
-            <DialogDescription>
-              Browse the storefront, search, open your wishlist or cart, or sign in.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-2 px-5 py-5">
-            {navigationLinks.map((link) => {
-              const active =
-                link.href === "/"
-                  ? pathname === "/"
-                  : !link.href.startsWith("#") && pathname.startsWith(link.href)
-
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "rounded-2xl px-4 py-3 text-sm font-semibold transition-colors",
-                    active
-                      ? "bg-primary text-white"
-                      : "bg-surface-low text-foreground hover:bg-surface-high"
-                  )}
+      {/* ── Mobile left-side sheet ─────────────────────────── */}
+      <RadixDialog.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <RadixDialog.Portal>
+          {/* Backdrop */}
+          <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          {/* Sheet panel — slides from left */}
+          <RadixDialog.Content
+            className={cn(
+              "fixed left-0 top-0 z-50 h-full w-72 bg-background shadow-2xl",
+              "flex flex-col border-r border-border",
+              "data-[state=open]:animate-in data-[state=closed]:animate-out",
+              "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+              "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+              "duration-300"
+            )}
+          >
+            {/* Sheet header */}
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                <BrandMark textClassName="text-base text-foreground" iconClassName="size-8 rounded-lg" />
+              </Link>
+              <RadixDialog.Close asChild>
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  className="inline-flex size-9 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
                 >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </div>
+                  <X className="size-4" />
+                </button>
+              </RadixDialog.Close>
+            </div>
 
-          <div className="grid grid-cols-3 gap-3 border-t border-border px-5 py-5">
-            <Link
-              href="/wishlist"
-              onClick={() => setMobileMenuOpen(false)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-low px-4 py-3 text-sm font-semibold text-foreground"
-            >
-              <Heart className="size-4" />
-              Wishlist
-            </Link>
-            <Link
-              href="/cart"
-              onClick={() => setMobileMenuOpen(false)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-low px-4 py-3 text-sm font-semibold text-foreground"
-            >
-              <ShoppingCart className="size-4" />
-              Cart
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false)
-                setAuthOpen(true)
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white"
-            >
-              <UserRound className="size-4" />
-              Account
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            {/* Nav links */}
+            <nav className="flex flex-col gap-1 overflow-y-auto px-3 py-4 flex-1">
+              {navigationLinks.map((link) => {
+                const active =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : !link.href.startsWith("#") && pathname.startsWith(link.href)
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "rounded-2xl px-4 py-3 text-sm font-semibold transition-colors",
+                      active
+                        ? "bg-primary text-white"
+                        : "text-foreground hover:bg-surface-high"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
+
+            {/* Bottom actions: Wishlist, Cart, Account */}
+            <div className="border-t border-border px-3 py-4 space-y-2">
+              <Link
+                href="/wishlist"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-foreground hover:bg-surface-high transition-colors"
+              >
+                <Heart className="size-4 shrink-0" />
+                Wishlist
+                {totalWishlistItems > 0 && (
+                  <span className="ml-auto inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-black text-white">
+                    {totalWishlistItems}
+                  </span>
+                )}
+              </Link>
+              <Link
+                href="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-foreground hover:bg-surface-high transition-colors"
+              >
+                <ShoppingCart className="size-4 shrink-0" />
+                Cart
+                {totalItems > 0 && (
+                  <span className="ml-auto inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-black text-white">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  setAuthOpen(true)
+                }}
+                className="flex w-full items-center gap-3 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <UserRound className="size-4 shrink-0" />
+                Account
+              </button>
+            </div>
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>
       <AuthPanel open={authOpen} onClose={() => setAuthOpen(false)} />
     </header>
   )
