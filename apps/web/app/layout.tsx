@@ -100,7 +100,9 @@ export default function RootLayout({
             <FirebaseAnalytics />
           </Suspense>
           <CartProvider>
-            <TrafficTracker />
+            <Suspense>
+              <TrafficTracker />
+            </Suspense>
             {children}
           </CartProvider>
         </SerwistProvider>
