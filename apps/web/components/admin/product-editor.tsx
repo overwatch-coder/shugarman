@@ -456,18 +456,20 @@ function ColorEditor({
 // ─── Storage options editor ───────────────────────────────────────────────────
 
 function StorageEditor({
-  options,
+  options = [],
   onChange,
 }: {
-  options: ProductStorage[]
+  options?: ProductStorage[]
   onChange: (o: ProductStorage[]) => void
 }) {
   const [label, setLabel] = useState("")
   const [value, setValue] = useState("")
 
   function add() {
-    if (!label.trim() || !value.trim()) return
-    onChange([...options, { label, value }])
+    if (!label.trim()) return
+    // value defaults to label when left blank
+    const resolvedValue = value.trim() || label.trim()
+    onChange([...options, { label: label.trim(), value: resolvedValue }])
     setLabel("")
     setValue("")
   }
@@ -505,8 +507,9 @@ function StorageEditor({
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Value (e.g. 256)"
-          className={inputCls + " w-28"}
+          placeholder="Value (e.g. 256) — optional"
+          className={inputCls + " w-36"}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
         />
         <button
           type="button"
@@ -523,18 +526,23 @@ function StorageEditor({
 // ─── Specs editor ─────────────────────────────────────────────────────────────
 
 function SpecsEditor({
-  specs,
+  specs = [],
   onChange,
 }: {
-  specs: TechSpec[]
+  specs?: TechSpec[]
   onChange: (s: TechSpec[]) => void
 }) {
   const [label, setLabel] = useState("")
   const [value, setValue] = useState("")
+  const [specError, setSpecError] = useState("")
 
   function add() {
-    if (!label.trim() || !value.trim()) return
-    onChange([...specs, { label, value }])
+    if (!label.trim() || !value.trim()) {
+      setSpecError("Both spec name and value are required.")
+      return
+    }
+    setSpecError("")
+    onChange([...specs, { label: label.trim(), value: value.trim() }])
     setLabel("")
     setValue("")
   }
@@ -562,17 +570,20 @@ function SpecsEditor({
           ))}
         </div>
       )}
+      {specError && (
+        <p className="text-xs text-red-400">{specError}</p>
+      )}
       <div className="flex gap-2">
         <input
           value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Label (e.g. Display)"
+          onChange={(e) => { setLabel(e.target.value); setSpecError("") }}
+          placeholder="Name (e.g. Display)"
           className={inputCls + " w-40"}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
         />
         <input
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => { setValue(e.target.value); setSpecError("") }}
           placeholder="Value (e.g. 6.7″ OLED)"
           className={inputCls + " flex-1"}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
@@ -580,7 +591,7 @@ function SpecsEditor({
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-white/10 px-3 text-sm text-neutral-300 hover:bg-white/5 hover:text-white"
+          className="rounded-lg border border-border px-3 text-sm text-content-secondary hover:bg-accent hover:text-foreground"
         >
           <Plus className="size-4" />
         </button>
