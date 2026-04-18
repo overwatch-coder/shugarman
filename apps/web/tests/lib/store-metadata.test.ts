@@ -13,7 +13,7 @@ const defaults: StoreMetadata = {
   phone: "0558694853",
   whatsapp: "233558694853",
   email: "store@example.com",
-  address: "Asempa Pharmacy Building",
+  address: "ASEMPA PHARMACY PZ, M9WH+J7P, Kejetia Road, Kumasi, Ghana",
   city: "Kumasi, Adum",
   region: "Ashanti Region",
   country: "Ghana",

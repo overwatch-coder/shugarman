@@ -50,6 +50,7 @@ export function SettingsClient({
       city: "",
       region: "",
       country: "Ghana",
+      googleMapsUrl: "",
       hours: [],
       social: [],
     }
@@ -298,6 +299,13 @@ export function SettingsClient({
             <Field label="City" value={form.city ?? ""} onChange={(v) => update("city", v)} />
             <Field label="Region" value={form.region ?? ""} onChange={(v) => update("region", v)} />
             <Field label="Country" value={form.country ?? ""} onChange={(v) => update("country", v)} />
+            <Field
+              label="Google Maps Link"
+              value={form.googleMapsUrl ?? ""}
+              onChange={(v) => update("googleMapsUrl", v)}
+              full
+              placeholder="https://maps.app.goo.gl/..."
+            />
           </div>
         </section>
 
@@ -414,6 +422,7 @@ function Field({
   type = "text",
   full = false,
   textarea = false,
+  placeholder,
 }: {
   label: string
   value: string
@@ -421,6 +430,7 @@ function Field({
   type?: string
   full?: boolean
   textarea?: boolean
+  placeholder?: string
 }) {
   const cls =
     "w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-content-muted focus:border-primary/50"
@@ -430,9 +440,9 @@ function Field({
         {label}
       </span>
       {textarea ? (
-        <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className={cls + " resize-none"} />
+        <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} placeholder={placeholder} className={cls + " resize-none"} />
       ) : (
-        <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
+        <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={cls} />
       )}
     </label>
   )

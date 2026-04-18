@@ -28,10 +28,11 @@ export const storeMetadata: StoreMetadata = {
   phone: "0558694853",
   whatsapp: "233558694853",
   email: "fosuemmanuel2001@gmail.com",
-  address: "Asempa Pharmacy Building, close to Otumfour Statue",
+  address: "ASEMPA PHARMACY PZ, M9WH+J7P, Kejetia Road, Kumasi, Ghana",
   city: "Kumasi, Adum",
   region: "Ashanti Region",
   country: "Ghana",
+  googleMapsUrl: "https://maps.app.goo.gl/s7XwPzipS49ANnrV6",
   hours: [
     { day: "Mon", open: "8:00 AM", close: "5:00 PM", status: "open" },
     { day: "Tue", open: "8:00 AM", close: "5:00 PM", status: "open" },
@@ -570,7 +571,7 @@ export const aboutPageContent: AboutPageContent = {
     heading: "Our Story",
     paragraphs: [
       `${BRAND_NAME} opened its doors in the heart of Kumasi's Adum district with a singular mission — to make world-class smartphones accessible to every Ghanaian. We've seen how a great device can transform education, business and daily life, and we wanted to be the store that breaks down the price barrier.`,
-      "Located at the iconic Asempa Pharmacy Building near the Otumfour Statue, we've grown from a small retail counter into Kumasi's go-to destination for new phones, certified refurbished devices, expert repairs, and flexible installment plans that fit real budgets.",
+      "Located at ASEMPA PHARMACY PZ on Kejetia Road, we've grown from a small retail counter into Kumasi's go-to destination for new phones, certified refurbished devices, expert repairs, and flexible installment plans that fit real budgets.",
       "Every phone we sell is personally vetted. Every repair is done by trained technicians. And every customer walks out knowing we stand behind our work.",
     ],
   },
@@ -711,5 +712,5 @@ export const contactPageContent: ContactPageContent = {
     { value: "trade-in", label: "Trade-in" },
     { value: "other", label: "Other" },
   ],
-  mapEmbedNote: "Asempa Pharmacy Building, near Otumfour Statue, Adum, Kumasi, Ghana",
+  mapEmbedNote: "ASEMPA PHARMACY PZ, M9WH+J7P, Kejetia Road, Kumasi, Ghana",
 }

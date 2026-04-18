@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ArrowRight, Heart, Menu, Search, ShoppingCart, UserRound, X } from "lucide-react"
 import * as RadixDialog from "@radix-ui/react-dialog"
+import { onAuthStateChanged, type User } from "firebase/auth"
 
 import { cn } from "@workspace/ui/lib/utils"
 import {
@@ -21,6 +22,7 @@ import { getSearchSuggestions } from "@/lib/storefront-search"
 import { navigationLinks } from "@/lib/storefront-data"
 import type { ProductCard } from "@/lib/storefront-types"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import { getFirebaseAuth } from "@/lib/firebase"
 import { AnimatedCounter } from "./motion-primitives"
 import { ThemeToggle } from "./theme-toggle"
 import { useCart } from "./cart-provider"
@@ -36,6 +38,24 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    try {
+      const auth = getFirebaseAuth()
+      return onAuthStateChanged(auth, (user) => setFirebaseUser(user))
+    } catch {
+      // Firebase not configured — ignore
+    }
+  }, [])
+
+  function handleAccountClick() {
+    if (firebaseUser) {
+      router.push("/admin")
+    } else {
+      setAuthOpen(true)
+    }
+  }
 
   const suggestions = useMemo(
     () => getSearchSuggestions(searchProducts, searchTerm),
@@ -143,7 +163,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
           <button
             type="button"
             aria-label="Account"
-            onClick={() => setAuthOpen(true)}
+            onClick={handleAccountClick}
             className="hidden md:inline-flex size-10 items-center justify-center rounded-full text-content-secondary transition-colors hover:bg-white/10 hover:text-foreground"
           >
             <UserRound className="size-4" />
@@ -365,7 +385,7 @@ export function StoreHeader({ searchProducts }: { searchProducts: ProductCard[] 
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false)
-                  setAuthOpen(true)
+                  handleAccountClick()
                 }}
                 className="flex w-full items-center gap-3 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               >

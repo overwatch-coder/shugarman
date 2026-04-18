@@ -15,6 +15,8 @@ import {
   getStorefrontMetadata,
 } from "@/lib/storefront-dal"
 
+export const dynamic = "force-dynamic"
+
 const iconMap = {
   "badge-check": BadgeCheck,
   "badge-cent": BadgeCent,

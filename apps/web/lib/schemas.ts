@@ -41,7 +41,7 @@ export interface ProductImage {
 export interface ProductDoc {
   slug: string
   name: string
-  brand: string
+  brand?: string
   price: number
   currency: string
   condition: ProductCondition
@@ -200,6 +200,7 @@ export interface StoreSettingsDoc {
   city: string
   region: string
   country: string
+  googleMapsUrl?: string
   hours: StoreHours[]
   social: SocialLink[]
 }

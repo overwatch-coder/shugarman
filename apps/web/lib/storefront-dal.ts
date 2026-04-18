@@ -71,6 +71,7 @@ function settingsToMetadata(doc: StoreSettingsDoc): StoreMetadata {
     city: doc.city,
     region: doc.region,
     country: doc.country,
+    googleMapsUrl: doc.googleMapsUrl,
     hours: doc.hours,
     social: doc.social,
   }, mockStoreMetadata)

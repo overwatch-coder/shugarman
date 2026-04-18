@@ -119,7 +119,7 @@ export const SHIPPING_METHODS: ShippingMethod[] = [
   {
     id: "pickup",
     label: "In-Store Pickup",
-    description: "Asempa Pharmacy Building, Adum",
+    description: "ASEMPA PHARMACY PZ, Kejetia Road, Kumasi",
     price: 0,
     estimate: "Ready in 1 hour",
   },

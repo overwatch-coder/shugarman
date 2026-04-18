@@ -41,7 +41,7 @@ export async function saveProduct(data: ProductDoc): Promise<{ success: boolean;
       category: normalizedData.category || "smartphones",
       image: normalizedData.image,
       imageAlt: normalizedData.imageAlt,
-      badge: normalizedData.badge || undefined,
+      ...(normalizedData.badge ? { badge: normalizedData.badge } : { badge: "" }),
       inStock: normalizedData.inStock,
       featured: normalizedData.featured,
       rating: normalizedData.rating,

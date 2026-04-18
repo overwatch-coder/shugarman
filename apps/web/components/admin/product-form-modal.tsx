@@ -63,8 +63,8 @@ export function ProductFormModal({
     e.preventDefault()
     setError("")
 
-    if (!form.name.trim() || !form.slug.trim() || !form.brand.trim()) {
-      setError("Name, slug, and brand are required.")
+    if (!form.name.trim() || !form.slug.trim() || !form.category.trim()) {
+      setError("Name, slug, and category are required.")
       return
     }
     if (form.price <= 0) {
@@ -136,7 +136,7 @@ export function ProductFormModal({
           {/* Brand */}
           <label className="space-y-1.5">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Brand *
+              Brand
             </span>
             <input
               value={form.brand}
@@ -192,7 +192,7 @@ export function ProductFormModal({
           {/* Category */}
           <label className="space-y-1.5">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Category
+              Category *
             </span>
             <input
               value={form.category}

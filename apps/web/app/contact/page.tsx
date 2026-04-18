@@ -9,7 +9,7 @@ import { ContactPageClient } from "@/components/storefront/contact-page-client"
 export const metadata: Metadata = {
   title: `Contact Us | ${BRAND_NAME}`,
   description:
-    `Get in touch with ${BRAND_NAME} in Kumasi via WhatsApp, phone, or email. Visit us at Asempa Pharmacy Building near Otumfour Statue, Adum.`,
+    `Get in touch with ${BRAND_NAME} in Kumasi via WhatsApp, phone, or email. Visit us at ASEMPA PHARMACY PZ, Kejetia Road, Kumasi.`,
 }
 
 export default async function ContactPage() {

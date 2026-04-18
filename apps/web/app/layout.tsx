@@ -6,7 +6,6 @@ import "@workspace/ui/globals.css"
 import "./storefront.css"
 import { AppToaster } from "@/components/shared/app-toaster"
 import { FirebaseAnalytics } from "@/components/shared/firebase-analytics"
-import { SerwistProvider } from "./serwist"
 import { CartProvider } from "@/components/storefront/cart-provider"
 import { TrafficTracker } from "@/components/storefront/traffic-tracker"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -94,7 +93,6 @@ export default function RootLayout({
     >
       <body className="sf-bg-gradient font-body text-foreground">
         <ThemeProvider>
-        <SerwistProvider swUrl="/serwist/sw.js">
           <AppToaster />
           <Suspense>
             <FirebaseAnalytics />
@@ -105,7 +103,6 @@ export default function RootLayout({
             </Suspense>
             {children}
           </CartProvider>
-        </SerwistProvider>
         </ThemeProvider>
       </body>
     </html>

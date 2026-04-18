@@ -4,6 +4,8 @@ import { ProductDetailPageClient } from "@/components/storefront/product-detail-
 import { StoreShell } from "@/components/storefront/store-shell"
 import { getApprovedReviewsForProduct, getStorefrontProductDetail } from "@/lib/storefront-dal"
 
+export const dynamic = "force-dynamic"
+
 export default async function ProductPage({
   params,
 }: {

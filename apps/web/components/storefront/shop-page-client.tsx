@@ -22,8 +22,6 @@ import type {
 import { MotionList, MotionPage, MotionSection } from "./motion-primitives"
 import { ProductCard } from "./product-card"
 
-const categories = ["Smartphones", "Tablets", "Laptops", "Wearables"] as const
-const brands = ["Apple", "Samsung"] as const
 const swatches = [
   { hex: "#171717", label: "Black" },
   { hex: "#A3A3A3", label: "Silver" },
@@ -61,7 +59,15 @@ const ITEMS_PER_PAGE = 16
     }
   }
 
-  export function ShopPageClient({ products }: { products: ProductCardData[] }) {
+  export function ShopPageClient({
+    products,
+    categories = [],
+    brands = [],
+  }: {
+    products: ProductCardData[]
+    categories?: string[]
+    brands?: string[]
+  }) {
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
@@ -164,8 +170,8 @@ const ITEMS_PER_PAGE = 16
         const searchMatch = !query.trim() || matchesStorefrontQuery(product, query)
         const brandMatch = !selectedBrand || product.brand === selectedBrand
         const conditionMatch = !selectedCondition || product.condition === selectedCondition
-        const effectiveMax = priceRange[1] >= PRICE_ABSOLUTE_MAX ? Infinity : priceRange[1]
-        const priceMatch = product.price >= priceRange[0] && product.price <= effectiveMax
+        const effectiveMax = localMax >= priceCeiling ? Infinity : localMax
+        const priceMatch = product.price >= localMin && product.price <= effectiveMax
 
         return searchMatch && brandMatch && conditionMatch && priceMatch
       })
@@ -180,7 +186,7 @@ const ITEMS_PER_PAGE = 16
         default:
           return nextProducts
       }
-    }, [priceRange, products, query, selectedBrand, selectedCondition, sort])
+    }, [localMin, localMax, priceCeiling, products, query, selectedBrand, selectedCondition, sort])
 
     const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
     const safePage = Math.min(currentPage, totalPages)
@@ -215,22 +221,28 @@ const ITEMS_PER_PAGE = 16
         chips.push({ label: selectedColor, onRemove: () => updateParams({ color: null }) })
       }
 
-      const hasMinPrice = priceRange[0] > 0
-      const hasMaxPrice = priceRange[1] < PRICE_ABSOLUTE_MAX
+      const hasMinPrice = localMin > 0
+      const hasMaxPrice = localMax < priceCeiling
       if (hasMinPrice || hasMaxPrice) {
         const label = hasMinPrice && hasMaxPrice
-          ? `GHC ${priceRange[0].toLocaleString()} – ${priceRange[1].toLocaleString()}`
+          ? `GHC ${localMin.toLocaleString()} – ${localMax.toLocaleString()}`
           : hasMinPrice
-          ? `From GHC ${priceRange[0].toLocaleString()}`
-          : `Up to GHC ${priceRange[1].toLocaleString()}`
+          ? `From GHC ${localMin.toLocaleString()}`
+          : `Up to GHC ${localMax.toLocaleString()}`
         chips.push({
           label,
-          onRemove: () => updateParams({ minPrice: null, maxPrice: null }),
+          onRemove: () => {
+            setLocalMin(0)
+            setLocalMax(priceCeiling)
+            setMinInput("")
+            setMaxInput("")
+            updateParams({ minPrice: null, maxPrice: null })
+          },
         })
       }
 
       return chips
-    }, [query, selectedBrand, selectedCategories, selectedColor, selectedCondition, toggleCategory, updateParams])
+    }, [localMin, localMax, priceCeiling, query, selectedBrand, selectedCategories, selectedColor, selectedCondition, toggleCategory, updateParams])
 
     const filterControls = (
       <>
@@ -333,7 +345,11 @@ const ITEMS_PER_PAGE = 16
                 step={100}
                 value={minInput}
                 placeholder="0"
-                onChange={(e) => setMinInput(e.target.value)}
+                onChange={(e) => {
+                  setMinInput(e.target.value)
+                  const num = Number(e.target.value)
+                  if (!Number.isNaN(num)) setLocalMin(Math.max(0, num))
+                }}
                 onBlur={() => {
                   const v = minInput === "" ? 0 : Math.max(0, Math.min(Number(minInput), localMax - 100))
                   setLocalMin(v)
@@ -356,7 +372,12 @@ const ITEMS_PER_PAGE = 16
                 step={100}
                 value={maxInput}
                 placeholder="Any"
-                onChange={(e) => setMaxInput(e.target.value)}
+                onChange={(e) => {
+                  setMaxInput(e.target.value)
+                  const num = Number(e.target.value)
+                  if (!Number.isNaN(num) && num > 0) setLocalMax(num)
+                  else if (e.target.value === "") setLocalMax(priceCeiling)
+                }}
                 onBlur={() => {
                   const raw = maxInput === "" ? priceCeiling : Number(maxInput)
                   const v = Math.min(priceCeiling, Math.max(raw, localMin + 100))

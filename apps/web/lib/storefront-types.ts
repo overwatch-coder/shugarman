@@ -15,6 +15,7 @@ export interface StoreMetadata {
   city: string;
   region: string;
   country: string;
+  googleMapsUrl?: string;
   hours: { day: string; open: string; close: string; status: "open" | "closed" }[];
   social: { platform: string; handle: string; url: string }[];
 }

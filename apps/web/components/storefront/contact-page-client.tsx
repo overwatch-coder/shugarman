@@ -307,13 +307,29 @@ export function ContactPageClient({ content, storeMetadata }: ContactPageClientP
                 </p>
               </div>
             </div>
-            {/* Map placeholder */}
-            <div className="flex h-40 items-center justify-center rounded-xl bg-[var(--sf-surface-low)] text-xs text-[var(--sf-text-muted)]">
-              <div className="text-center">
-                <MapPin className="mx-auto mb-1 size-6 text-primary/50" />
-                {mapEmbedNote}
-              </div>
+            {/* Embedded Google Map */}
+            <div className="overflow-hidden rounded-xl">
+              <iframe
+                title="Shugarman iStore location"
+                src="https://maps.google.com/maps?q=6.6967874,-1.6222216&t=&z=17&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="200"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="rounded-xl"
+              />
             </div>
+            <Link
+              href={storeMetadata.googleMapsUrl || "https://maps.app.goo.gl/s7XwPzipS49ANnrV6"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            >
+              <MapPin className="size-3.5" />
+              Get Directions
+            </Link>
           </div>
 
           {/* Hours card */}

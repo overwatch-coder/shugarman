@@ -768,8 +768,8 @@ export function ProductEditor({
 
     setError("")
 
-    if (!form.name.trim() || !form.slug.trim() || !form.brand.trim()) {
-      setError("Name, slug, and brand are required.")
+    if (!form.name.trim() || !form.slug.trim() || !form.category.trim()) {
+      setError("Name, slug, and category are required.")
       return
     }
     if (form.price <= 0) {
@@ -894,7 +894,7 @@ export function ProductEditor({
             />
           </Field>
 
-          <Field label="Brand" required>
+          <Field label="Brand">
             {brands.length > 0 ? (
               <select
                 value={form.brand}
@@ -918,7 +918,7 @@ export function ProductEditor({
             )}
           </Field>
 
-          <Field label="Category">
+          <Field label="Category" required>
             {categories.length > 0 ? (
               <select
                 value={form.category}
