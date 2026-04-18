@@ -22,7 +22,7 @@ export function ProductsClient({
   const filtered = initialProducts.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.brand.toLowerCase().includes(search.toLowerCase()) ||
+      (p.brand ?? "").toLowerCase().includes(search.toLowerCase()) ||
       p.slug.toLowerCase().includes(search.toLowerCase())
   )
 
