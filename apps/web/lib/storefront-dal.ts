@@ -26,7 +26,7 @@ function docToCard(doc: ProductDoc): ProductCard {
   return {
     slug: doc.slug,
     name: doc.name,
-    brand: doc.brand,
+    brand: doc.brand ?? "",
     price: doc.price,
     currency: doc.currency,
     condition: doc.condition,
@@ -41,7 +41,7 @@ function docToDetail(doc: ProductDoc, relatedCards: ProductCard[]): ProductDetai
   return {
     slug: doc.slug,
     name: doc.name,
-    brand: doc.brand,
+    brand: doc.brand ?? "",
     price: doc.price,
     currency: doc.currency,
     condition: doc.condition,
