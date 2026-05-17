@@ -16,6 +16,7 @@ export function normalizeProductDoc(
     image: data?.image ?? "",
     imageAlt: data?.imageAlt ?? "",
     badge: data?.badge,
+    published: data?.published ?? true,
     inStock: data?.inStock ?? true,
     featured: data?.featured ?? false,
     rating: data?.rating ?? 0,

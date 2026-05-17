@@ -50,6 +50,7 @@ export interface ProductDoc {
   image: string
   imageAlt: string
   badge?: string
+  published: boolean
   inStock: boolean
   featured: boolean
   rating: number

@@ -69,6 +69,7 @@ export function buildProductDocs(nowIso: string, existingCreatedAtBySlug: Map<st
       image: card.image,
       imageAlt: card.imageAlt,
       ...(card.badge ? { badge: card.badge } : {}),
+      published: true,
       inStock: detail?.inStock ?? true,
       featured: isFeaturedProduct(index),
       rating: detail?.rating ?? 0,

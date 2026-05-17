@@ -1,6 +1,7 @@
 "use server"
 
 import { adminDb } from "@/lib/firebase-admin"
+import { normalizeCurrencyCode } from "@/lib/admin/product-editor-helpers"
 import { normalizeProductDoc } from "@/lib/product-doc-normalizer"
 import type { ProductDoc } from "@/lib/schemas"
 
@@ -8,7 +9,7 @@ const COLLECTION = "products"
 
 export async function getProducts(): Promise<ProductDoc[]> {
   try {
-    const snap = await adminDb.collection(COLLECTION).orderBy("updatedAt", "desc").get()
+    const snap = await adminDb.collection(COLLECTION).orderBy("createdAt", "desc").get()
     return snap.docs.map((doc) => normalizeProductDoc(doc.id, doc.data() as Partial<ProductDoc>))
   } catch {
     return []
@@ -42,6 +43,7 @@ export async function saveProduct(data: ProductDoc): Promise<{ success: boolean;
       image: normalizedData.image,
       imageAlt: normalizedData.imageAlt,
       ...(normalizedData.badge ? { badge: normalizedData.badge } : { badge: "" }),
+      published: normalizedData.published,
       inStock: normalizedData.inStock,
       featured: normalizedData.featured,
       rating: normalizedData.rating,
@@ -56,11 +58,30 @@ export async function saveProduct(data: ProductDoc): Promise<{ success: boolean;
       updatedAt: now,
     }
 
-    await adminDb.collection(COLLECTION).doc(normalizedData.slug).set(doc)
+    await adminDb.collection(COLLECTION).doc(normalizedData.slug).set({
+      ...doc,
+      currency: normalizeCurrencyCode(doc.currency),
+    })
     return { success: true }
   } catch (err) {
     console.error("saveProduct:", err)
     return { success: false, error: "Failed to save product" }
+  }
+}
+
+export async function updateProductPublished(
+  slug: string,
+  published: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await adminDb.collection(COLLECTION).doc(slug).update({
+      published,
+      updatedAt: new Date().toISOString(),
+    })
+    return { success: true }
+  } catch (err) {
+    console.error("updateProductPublished:", err)
+    return { success: false, error: "Failed to update product visibility" }
   }
 }
 

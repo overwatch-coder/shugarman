@@ -18,6 +18,27 @@ test("normalizeProductDoc restores missing array fields for partial product docs
   assert.equal(product.installment, null)
 })
 
+test("normalizeProductDoc treats older products as published by default", () => {
+  const product = normalizeProductDoc("iphone-15", {
+    name: "iPhone 15",
+    brand: "Apple",
+    price: 12000,
+  })
+
+  assert.equal(product.published, true)
+})
+
+test("normalizeProductDoc preserves explicit draft products", () => {
+  const product = normalizeProductDoc("iphone-15", {
+    name: "iPhone 15",
+    brand: "Apple",
+    price: 12000,
+    published: false,
+  })
+
+  assert.equal(product.published, false)
+})
+
 test("normalizeProductDoc preserves storage options and specs when they exist", () => {
   const product = normalizeProductDoc("iphone-15", {
     name: "iPhone 15",

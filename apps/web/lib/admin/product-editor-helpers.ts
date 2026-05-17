@@ -6,6 +6,52 @@ function slugify(name: string) {
     .replace(/(^-|-$)/g, "")
 }
 
+export const CURRENCY_OPTIONS = [
+  { code: "GHC", label: "GHC - Ghanaian Cedi" },
+  { code: "USD", label: "USD - US Dollar" },
+  { code: "EUR", label: "EUR - Euro" },
+  { code: "GBP", label: "GBP - British Pound" },
+  { code: "NGN", label: "NGN - Nigerian Naira" },
+  { code: "XOF", label: "XOF - West African CFA Franc" },
+] as const
+
+export type CurrencyCode = (typeof CURRENCY_OPTIONS)[number]["code"]
+
+const CURRENCY_CODES = new Set<string>(CURRENCY_OPTIONS.map((option) => option.code))
+
+export type PaginationItem = number | "ellipsis-start" | "ellipsis-end"
+
+export function sanitizeCurrencyInput(value: string) {
+  return value.replace(/[^a-z]/gi, "").toUpperCase()
+}
+
+export function normalizeCurrencyCode(value: string | null | undefined): CurrencyCode {
+  const sanitized = sanitizeCurrencyInput(value ?? "")
+  return CURRENCY_CODES.has(sanitized) ? (sanitized as CurrencyCode) : "GHC"
+}
+
+export function getPaginationItems({
+  currentPage,
+  totalPages,
+}: {
+  currentPage: number
+  totalPages: number
+}): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
+
+  if (currentPage <= 4) {
+    return [1, 2, 3, 4, 5, "ellipsis-end", totalPages]
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [1, "ellipsis-start", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, "ellipsis-start", currentPage - 1, currentPage, currentPage + 1, "ellipsis-end", totalPages]
+}
+
 export function getNextCreateSlugState({
   nextName,
   currentSlug,

@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Plus,
-  Trash2,
   Upload,
   X,
   Loader2,
-  GripVertical,
   Check,
 } from "lucide-react"
 import Link from "next/link"
@@ -29,7 +27,9 @@ import type {
 import { saveProduct } from "@/lib/actions/products"
 import {
   buildRelatedProductOptions,
+  CURRENCY_OPTIONS,
   getNextCreateSlugState,
+  normalizeCurrencyCode,
   selectPrimaryGalleryImage,
   slugify,
   toggleRelatedSlug,
@@ -60,6 +60,7 @@ const EMPTY_PRODUCT: ProductDoc = {
   image: "",
   imageAlt: "",
   badge: "",
+  published: true,
   inStock: true,
   featured: false,
   rating: 0,
@@ -779,6 +780,7 @@ export function ProductEditor({
 
     const payload: ProductDoc = {
       ...form,
+      currency: normalizeCurrencyCode(form.currency),
       // Sync primary image from gallery if not explicit
       image: form.image || (form.images[0]?.src ?? ""),
       imageAlt: form.imageAlt || (form.images[0]?.alt ?? ""),
@@ -969,11 +971,17 @@ export function ProductEditor({
             />
           </Field>
           <Field label="Currency">
-            <input
-              value={form.currency}
-              onChange={(e) => update("currency", e.target.value)}
+            <select
+              value={normalizeCurrencyCode(form.currency)}
+              onChange={(e) => update("currency", normalizeCurrencyCode(e.target.value))}
               className={inputCls}
-            />
+            >
+              {CURRENCY_OPTIONS.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.label}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
 

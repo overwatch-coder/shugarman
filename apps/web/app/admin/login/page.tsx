@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
+import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { getFirebaseAuth } from "@/lib/firebase"
 import { createSession } from "@/lib/admin-auth"
 import { BrandMark } from "@/components/shared/brand-mark"
@@ -11,6 +13,7 @@ export default function AdminLoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -52,6 +55,14 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0D0D0D] px-4">
       <div className="w-full max-w-md">
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/8 bg-white/5 px-3 py-2 text-sm font-medium text-neutral-400 transition-colors hover:border-primary/30 hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="size-4" />
+          Back to storefront
+        </Link>
+
         {/* Brand header */}
         <div className="mb-10 text-center">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500">
@@ -98,15 +109,26 @@ export default function AdminLoginPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Password
               </span>
-              <input
-                type="password"
+              <div className="relative">
+                <input
+                type={showPassword ? "text" : "password"}
                 required
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-white/8 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
+                className="w-full rounded-lg border border-white/8 bg-white/5 px-4 py-3 pr-12 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
                 placeholder="••••••••"
-              />
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-3 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-1 focus:ring-primary/30"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </label>
           </div>
 

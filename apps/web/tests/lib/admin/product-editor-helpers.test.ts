@@ -3,7 +3,10 @@ import assert from "node:assert/strict"
 
 import {
   buildRelatedProductOptions,
+  getPaginationItems,
   getNextCreateSlugState,
+  normalizeCurrencyCode,
+  sanitizeCurrencyInput,
   selectPrimaryGalleryImage,
   toggleRelatedSlug,
 } from "@/lib/admin/product-editor-helpers"
@@ -48,6 +51,34 @@ test("toggleRelatedSlug adds and removes unique related product slugs", () => {
   assert.deepEqual(toggleRelatedSlug([], "iphone-15"), ["iphone-15"])
   assert.deepEqual(toggleRelatedSlug(["iphone-15"], "iphone-15"), [])
   assert.deepEqual(toggleRelatedSlug(["iphone-15"], "galaxy-s24"), ["iphone-15", "galaxy-s24"])
+})
+
+test("sanitizeCurrencyInput removes numbers and symbols from typed currency values", () => {
+  assert.equal(sanitizeCurrencyInput("ghc 200"), "GHC")
+  assert.equal(sanitizeCurrencyInput("usd$"), "USD")
+  assert.equal(sanitizeCurrencyInput("12eur99"), "EUR")
+})
+
+test("normalizeCurrencyCode falls back to GHC when the code is empty or unknown", () => {
+  assert.equal(normalizeCurrencyCode("usd"), "USD")
+  assert.equal(normalizeCurrencyCode("123"), "GHC")
+  assert.equal(normalizeCurrencyCode("cad"), "GHC")
+})
+
+test("getPaginationItems returns compact ellipsis pagination for long ranges", () => {
+  assert.deepEqual(getPaginationItems({ currentPage: 6, totalPages: 12 }), [
+    1,
+    "ellipsis-start",
+    5,
+    6,
+    7,
+    "ellipsis-end",
+    12,
+  ])
+})
+
+test("getPaginationItems returns every page for short ranges", () => {
+  assert.deepEqual(getPaginationItems({ currentPage: 2, totalPages: 5 }), [1, 2, 3, 4, 5])
 })
 
 test("selectPrimaryGalleryImage moves the selected upload first and remaps linked colors", () => {

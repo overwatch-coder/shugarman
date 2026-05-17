@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { X } from "lucide-react"
 import type { ProductDoc, ProductCondition } from "@/lib/schemas"
 import { saveProduct } from "@/lib/actions/products"
+import { CURRENCY_OPTIONS, normalizeCurrencyCode } from "@/lib/admin/product-editor-helpers"
 
 function slugify(name: string) {
   return name
@@ -24,6 +25,7 @@ const EMPTY_PRODUCT: ProductDoc = {
   image: "",
   imageAlt: "",
   badge: "",
+  published: true,
   inStock: true,
   featured: false,
   rating: 0,
@@ -73,7 +75,10 @@ export function ProductFormModal({
     }
 
     startTransition(async () => {
-      const result = await saveProduct(form)
+      const result = await saveProduct({
+        ...form,
+        currency: normalizeCurrencyCode(form.currency),
+      })
       if (result.success) {
         onClose()
       } else {
@@ -149,7 +154,7 @@ export function ProductFormModal({
           {/* Price */}
           <label className="space-y-1.5">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Price (GHC) *
+              Price *
             </span>
             <input
               type="number"
@@ -159,6 +164,24 @@ export function ProductFormModal({
               step={0.01}
               className="w-full rounded-lg border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-primary/50"
             />
+          </label>
+
+          {/* Currency */}
+          <label className="space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              Currency
+            </span>
+            <select
+              value={normalizeCurrencyCode(form.currency)}
+              onChange={(e) => update("currency", normalizeCurrencyCode(e.target.value))}
+              className="w-full rounded-lg border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-primary/50"
+            >
+              {CURRENCY_OPTIONS.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           {/* Subtitle */}

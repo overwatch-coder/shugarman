@@ -8,6 +8,7 @@
 import { adminDb } from "@/lib/firebase-admin"
 import { normalizeHomeCategories, normalizeHomeCategoriesHeading, type HomeCategoriesHeading } from "@/lib/home-content"
 import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
+import { normalizeProductDoc } from "@/lib/product-doc-normalizer"
 import type { HomeContentDoc, ProductDoc, StoreSettingsDoc, ReviewDoc } from "@/lib/schemas"
 import type { ProductCard, ProductDetail, StoreMetadata } from "./storefront-types"
 import {
@@ -81,9 +82,13 @@ function settingsToMetadata(doc: StoreSettingsDoc): StoreMetadata {
 
 export async function getStorefrontProducts(): Promise<ProductCard[]> {
   try {
-    const snap = await adminDb.collection("products").where("inStock", "==", true).get()
+    const snap = await adminDb
+      .collection("products")
+      .where("inStock", "==", true)
+      .where("published", "==", true)
+      .get()
     if (snap.empty) return mockProducts
-    return snap.docs.map((d) => docToCard({ slug: d.id, ...d.data() } as ProductDoc))
+    return snap.docs.map((d) => docToCard(normalizeProductDoc(d.id, d.data() as Partial<ProductDoc>)))
   } catch {
     return mockProducts
   }
@@ -96,7 +101,8 @@ export async function getStorefrontProductDetail(
     const doc = await adminDb.collection("products").doc(slug).get()
     if (!doc.exists) return mockProductDetails[slug] ?? null
 
-    const data = { slug: doc.id, ...doc.data() } as ProductDoc
+    const data = normalizeProductDoc(doc.id, doc.data() as Partial<ProductDoc>)
+    if (!data.published || !data.inStock) return null
 
     // Fetch related products
     let related: ProductCard[] = []
@@ -105,7 +111,10 @@ export async function getStorefrontProductDetail(
         .collection("products")
         .where("__name__", "in", data.relatedSlugs.slice(0, 10))
         .get()
-      related = relSnap.docs.map((d) => docToCard({ slug: d.id, ...d.data() } as ProductDoc))
+      related = relSnap.docs
+        .map((d) => normalizeProductDoc(d.id, d.data() as Partial<ProductDoc>))
+        .filter((product) => product.published && product.inStock)
+        .map((product) => docToCard(product))
     }
 
     return docToDetail(data, related)
