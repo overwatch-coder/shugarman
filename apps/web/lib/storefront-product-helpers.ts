@@ -1,4 +1,5 @@
 import type { InstallmentPlan } from "./storefront-types"
+import type { ProductDoc } from "./schemas"
 
 export function hasInstallmentPlan(
   installment: InstallmentPlan | null | undefined
@@ -16,4 +17,8 @@ export function hasInstallmentPlan(
 
 export function isExternalImageSource(src: string) {
   return /^https?:\/\//i.test(src)
+}
+
+export function isPublicStorefrontProduct(product: ProductDoc) {
+  return product.inStock && product.published
 }

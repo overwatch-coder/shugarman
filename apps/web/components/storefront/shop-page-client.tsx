@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/dialog"
 
 import { matchesStorefrontQuery } from "@/lib/storefront-search"
+import { getPaginationItems } from "@/lib/pagination"
 import type {
   ProductCard as ProductCardData,
   ProductCondition,
@@ -29,7 +30,7 @@ const swatches = [
   { hex: "#991B1B", label: "Red" },
 ]
 
-const ITEMS_PER_PAGE = 16
+const ITEMS_PER_PAGE = 15
 
   const PRICE_ABSOLUTE_MAX = 50000
 
@@ -190,6 +191,10 @@ const ITEMS_PER_PAGE = 16
 
     const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
     const safePage = Math.min(currentPage, totalPages)
+    const paginationItems = useMemo(
+      () => getPaginationItems({ currentPage: safePage, totalPages }),
+      [safePage, totalPages]
+    )
     const paginatedProducts = filteredProducts.slice(
       (safePage - 1) * ITEMS_PER_PAGE,
       safePage * ITEMS_PER_PAGE
@@ -541,20 +546,30 @@ const ITEMS_PER_PAGE = 16
               >
                 <ChevronLeft className="size-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => updateParams({ page: page === 1 ? null : String(page) })}
-                  className={
-                    page === safePage
-                      ? "flex size-10 items-center justify-center bg-primary text-xs font-bold text-white"
-                      : "flex size-10 items-center justify-center bg-surface-low text-xs font-bold text-foreground hover:bg-surface-high"
-                  }
-                >
-                  {page}
-                </button>
-              ))}
+              {paginationItems.map((item) =>
+                typeof item === "number" ? (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => updateParams({ page: item === 1 ? null : String(item) })}
+                    className={
+                      item === safePage
+                        ? "flex size-10 items-center justify-center bg-primary text-xs font-bold text-white"
+                        : "flex size-10 items-center justify-center bg-surface-low text-xs font-bold text-foreground hover:bg-surface-high"
+                    }
+                    aria-current={item === safePage ? "page" : undefined}
+                  >
+                    {item}
+                  </button>
+                ) : (
+                  <span
+                    key={item}
+                    className="flex size-10 items-center justify-center bg-surface-low text-xs font-bold text-content-muted"
+                  >
+                    ...
+                  </span>
+                )
+              )}
               <button
                 type="button"
                 disabled={safePage >= totalPages}

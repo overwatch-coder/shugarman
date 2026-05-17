@@ -9,6 +9,7 @@ import { adminDb } from "@/lib/firebase-admin"
 import { normalizeHomeCategories, normalizeHomeCategoriesHeading, type HomeCategoriesHeading } from "@/lib/home-content"
 import { mergeStoreMetadataWithDefaults } from "@/lib/store-metadata"
 import { normalizeProductDoc } from "@/lib/product-doc-normalizer"
+import { isPublicStorefrontProduct } from "@/lib/storefront-product-helpers"
 import type { HomeContentDoc, ProductDoc, StoreSettingsDoc, ReviewDoc } from "@/lib/schemas"
 import type { ProductCard, ProductDetail, StoreMetadata } from "./storefront-types"
 import {
@@ -85,10 +86,12 @@ export async function getStorefrontProducts(): Promise<ProductCard[]> {
     const snap = await adminDb
       .collection("products")
       .where("inStock", "==", true)
-      .where("published", "==", true)
       .get()
     if (snap.empty) return mockProducts
-    return snap.docs.map((d) => docToCard(normalizeProductDoc(d.id, d.data() as Partial<ProductDoc>)))
+    return snap.docs
+      .map((d) => normalizeProductDoc(d.id, d.data() as Partial<ProductDoc>))
+      .filter(isPublicStorefrontProduct)
+      .map((product) => docToCard(product))
   } catch {
     return mockProducts
   }
@@ -102,7 +105,7 @@ export async function getStorefrontProductDetail(
     if (!doc.exists) return mockProductDetails[slug] ?? null
 
     const data = normalizeProductDoc(doc.id, doc.data() as Partial<ProductDoc>)
-    if (!data.published || !data.inStock) return null
+    if (!isPublicStorefrontProduct(data)) return null
 
     // Fetch related products
     let related: ProductCard[] = []
@@ -113,7 +116,7 @@ export async function getStorefrontProductDetail(
         .get()
       related = relSnap.docs
         .map((d) => normalizeProductDoc(d.id, d.data() as Partial<ProductDoc>))
-        .filter((product) => product.published && product.inStock)
+        .filter(isPublicStorefrontProduct)
         .map((product) => docToCard(product))
     }
 
